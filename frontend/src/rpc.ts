@@ -3,6 +3,7 @@ import { studionet } from "genlayer-js/chains";
 import type { CalldataEncodable, Hash } from "genlayer-js/types";
 import type { Address } from "viem";
 import type { CaseResult, ContractCase, Eip1193Provider } from "./types";
+import { classifyTransaction } from "./transaction";
 
 export const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS ?? "") as `0x${string}`;
 export const EXPLORER_URL = import.meta.env.VITE_STUDIONET_EXPLORER_URL ?? studionet.blockExplorers?.default.url ?? "https://genlayer-explorer.vercel.app";
@@ -68,14 +69,10 @@ export async function waitForSuccess(hash: `0x${string}`, onStatus: (status: str
   const client = readClient;
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const tx = await client.getTransaction({ hash: hash as Hash });
-    const status = String(tx.statusName ?? tx.status ?? "").toUpperCase();
-    onStatus(status || "PENDING");
-    if (status === "FINALIZED") {
-      const execution = String(tx.txExecutionResultName ?? "").toUpperCase();
-      if (execution !== "FINISHED_WITH_RETURN") throw new Error(`Transaction finalized with ${execution || "unknown execution result"}.`);
-      return;
-    }
-    if (["CANCELED", "LEADER_TIMEOUT", "VALIDATORS_TIMEOUT"].includes(status)) throw new Error(`Transaction ended as ${status}.`);
+    const decision = classifyTransaction(tx);
+    onStatus(decision.status);
+    if (decision.kind === "success") return;
+    if (decision.kind === "failure") throw new Error(`Transaction ended as ${decision.status}: ${decision.reason}.`);
     await new Promise((resolve) => window.setTimeout(resolve, Math.min(3000, 250 * 2 ** Math.min(attempt, 3))));
   }
   throw new Error("Transaction did not reach finality within the bounded wait.");

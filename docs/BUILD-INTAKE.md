@@ -40,6 +40,8 @@
 - GenVM runner pinning and text-runner prologue: applied to the pinned archive record, `# v0.1.0` header, and pre-PRE_DEPLOY schema probe.
 - GenLayer finality from the GenLayer transaction object: applied to the shared frontend transaction reconciliation design; use `FINALIZED` plus semantic execution success and authoritative readback.
 - Current SDK user errors: `gl.UserError` was rejected by the installed runtime; the contract now raises `gl.vm.UserError`, with a direct-mode regression for validation/rejection paths.
+- Frontend implementation: static React/Vite app with project-local `genlayer-js==1.1.8`, EIP-6963 provider discovery, selected-provider writes, bounded transaction reconciliation, and contract readback.
+- Frontend verification: `npm test` passed 2 files / 5 tests; `npm run build` passed; local HTTP smoke returned `200` for `/` and `/case/case-1` with SPA fallback. In-app browser visual inspection was attempted but unavailable because browser bootstrap failed before session creation (`failed to write kernel assets`); no visual acceptance is claimed.
 
 ## Official documentation checked
 
