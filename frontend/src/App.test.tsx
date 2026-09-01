@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import * as rpc from "./rpc";
 import { resetProviderDiscoveryForTests } from "./providers";
 import type { Eip1193Provider } from "./types";
 
@@ -188,6 +189,7 @@ describe("public wallet picker", () => {
       container.querySelector<HTMLButtonElement>(".wallet")?.click();
       container.querySelector<HTMLButtonElement>("[data-wallet-option]")?.click();
       await Promise.resolve();
+      await flushFrame();
     });
     await act(async () => { listeners.get("accountsChanged")?.([OTHER_ACCOUNT]); });
     expect(container.querySelector<HTMLButtonElement>(".wallet")?.textContent).toBe("Connect wallet");
@@ -215,5 +217,44 @@ describe("public wallet picker", () => {
       listeners.get("chainChanged")?.("0x1");
     });
     expect(container.querySelector<HTMLButtonElement>(".wallet")?.textContent).toBe("Connect wallet");
+  });
+
+  it("locks consequential writes while the first submission is in flight", async () => {
+    const metamask = wallet();
+    let release!: (hash: `0x${string}`) => void;
+    vi.mocked(rpc.sendWrite).mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }));
+    const { container, root } = await renderApp();
+    roots.push(root);
+    await act(async () => {
+      announce("m1", "MetaMask", metamask);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>(".wallet")?.click();
+      await flushFrame();
+    });
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>("[data-wallet-option]")?.click();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(container.querySelector<HTMLButtonElement>(".wallet")?.textContent).toBe("Wallet connected");
+    const form = container.querySelector<HTMLFormElement>(".form-grid")!;
+    const values = ["case-rapid", "is-number", "7.0.0", "jonschlinkert", "is-number", "a".repeat(40)];
+    form.querySelectorAll<HTMLInputElement>("input[required]").forEach((input, index) => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, values[index]);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>(".primary")?.click();
+      container.querySelector<HTMLButtonElement>(".primary")?.click();
+      await Promise.resolve();
+    });
+    expect(rpc.sendWrite).toHaveBeenCalledTimes(1);
+    expect(container.querySelector<HTMLButtonElement>(".primary")?.disabled).toBe(true);
+    await act(async () => {
+      release(`0x${"a".repeat(64)}`);
+      await Promise.resolve();
+    });
   });
 });

@@ -34,7 +34,7 @@ The valid baseline fixture is `is-number@7.0.0`:
 
 - registry URL: `https://registry.npmjs.org/is-number/7.0.0`
 - expected repository: `jonschlinkert/is-number`
-- release URL: `https://github.com/jonschlinkert/is-number/releases/tag/v7.0.0`
+- release URL: `https://github.com/jonschlinkert/is-number/releases/tag/7.0.0`
 - expected commit: `98e8ff1da1a89f93d1397a24d7413ed15421c139`
 - source subdirectory: empty string
 
@@ -54,6 +54,10 @@ authoritative reads and records the response date/status. If a fixture is no
 longer authoritative or returns an unexpected shape, that row is not retried
 blindly; the full bounded fixture set is revalidated and the plan is amended
 and re-reviewed before proceeding.
+
+The baseline release URL uses the repository's authoritative `7.0.0` tag. The
+contract accepts either the exact version tag or its `v`-prefixed equivalent,
+but the live fixture records the tag that resolves on GitHub.
 
 ## Matrix and exact proof requirements
 

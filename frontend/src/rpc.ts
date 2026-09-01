@@ -1,12 +1,13 @@
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
+import { TransactionHashVariant } from "genlayer-js/types";
 import type { CalldataEncodable, Hash } from "genlayer-js/types";
 import type { Address } from "viem";
 import type { CaseResult, ContractCase, Eip1193Provider } from "./types";
 import { classifyTransaction } from "./transaction";
 
 export const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS ?? "") as `0x${string}`;
-export const EXPLORER_URL = import.meta.env.VITE_STUDIONET_EXPLORER_URL ?? studionet.blockExplorers?.default.url ?? "https://genlayer-explorer.vercel.app";
+export const EXPLORER_URL = import.meta.env.VITE_STUDIONET_EXPLORER_URL ?? studionet.blockExplorers?.default.url ?? "https://explorer-studio.genlayer.com";
 export const STUDIONET_CHAIN_ID = `0x${studionet.id.toString(16)}`;
 export const STUDIONET_CHAIN = {
   chainId: STUDIONET_CHAIN_ID,
@@ -39,18 +40,27 @@ function decode(value: unknown): Record<string, unknown> {
   return parsed as Record<string, unknown>;
 }
 
-export async function getCount(): Promise<number> {
-  const value = await read("count", () => readClient.readContract({ address: ensureAddress(), functionName: "get_count", args: [] }));
+export type ReadOptions = { finalized?: boolean };
+
+function readVariant(options?: ReadOptions): TransactionHashVariant {
+  return options?.finalized ? TransactionHashVariant.LATEST_FINAL : TransactionHashVariant.LATEST_NONFINAL;
+}
+
+export async function getCount(options?: ReadOptions): Promise<number> {
+  const variant = readVariant(options);
+  const value = await read(`count:${variant}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_count", args: [], transactionHashVariant: variant }));
   return Number(value);
 }
 
-export async function getCase(caseId: string): Promise<ContractCase> {
-  const value = await read(`case:${caseId}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_case", args: [caseId] }));
+export async function getCase(caseId: string, options?: ReadOptions): Promise<ContractCase> {
+  const variant = readVariant(options);
+  const value = await read(`case:${caseId}:${variant}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_case", args: [caseId], transactionHashVariant: variant }));
   return decode(value) as unknown as ContractCase;
 }
 
-export async function getResult(caseId: string): Promise<CaseResult> {
-  const value = await read(`result:${caseId}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_result", args: [caseId] }));
+export async function getResult(caseId: string, options?: ReadOptions): Promise<CaseResult> {
+  const variant = readVariant(options);
+  const value = await read(`result:${caseId}:${variant}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_result", args: [caseId], transactionHashVariant: variant }));
   return decode(value) as unknown as CaseResult;
 }
 
@@ -59,10 +69,19 @@ export function createWriteClient(provider: Eip1193Provider, account: `0x${strin
 }
 
 export async function sendWrite(provider: Eip1193Provider, account: `0x${string}`, functionName: string, args: unknown[]): Promise<`0x${string}`> {
+  await ensureSufficientBalance(provider, account);
   const client = createWriteClient(provider, account);
   const hash = await client.writeContract({ address: ensureAddress(), functionName, args: args as CalldataEncodable[], value: 0n });
   if (typeof hash !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(hash)) throw new Error("Wallet returned an invalid transaction hash.");
   return hash as `0x${string}`;
+}
+
+export async function ensureSufficientBalance(provider: Eip1193Provider, account: `0x${string}`): Promise<void> {
+  const value = await provider.request({ method: "eth_getBalance", params: [account, "latest"] });
+  const text = typeof value === "string" ? value : "";
+  if (!/^0x[0-9a-fA-F]+$/.test(text) || BigInt(text) <= 0n) {
+    throw new Error("Wallet balance is insufficient for this action.");
+  }
 }
 
 export async function waitForSuccess(hash: `0x${string}`, onStatus: (status: string) => void): Promise<void> {

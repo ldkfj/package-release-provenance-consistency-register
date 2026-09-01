@@ -54,6 +54,50 @@ Known version-sensitive warning: the linter reports a newer runner is available.
 
 ## Trust and state inventory
 
+### Complete storage, ABI and nondeterminism inventory
+
+- Storage: `cases: TreeMap[str, ReleaseCase]` is keyed by `case_id`;
+  `duplicate_keys: TreeMap[str, str]` is keyed by
+  `ecosystem|package_name|version|repository_owner/repository_name|expected_commit_id`;
+  `case_count: u8` is bounded by `MAX_CASES=128`. `ReleaseCase` stores
+  `owner: Address`, the string fields `ecosystem`, `package_name`,
+  `version`, `registry_url`, `repository_owner`, `repository_name`,
+  `release_url`, `expected_commit_id`, `source_subdirectory`, `state`,
+  `outcome`, `observed_repository`, `observed_tag`,
+  `observed_commit_id`, `evidence_digest`, and `retry_count: u8`.
+  Bounds are `MAX_TEXT=64`, `MAX_URL=512`, `MAX_SUBDIRECTORY=128`,
+  `MAX_RESPONSE=131072`, `PAGE_SIZE=20`, and `MAX_RETRIES=2`.
+- Writes: `create_case(case_id, ecosystem, package_name, version, registry_url,
+  repository_owner, repository_name, release_url, expected_commit_id,
+  source_subdirectory)` creates `DRAFT`, stores the sender as `owner`,
+  lowercases repository identity, and rejects duplicate provenance.
+  `freeze_case(case_id)` is owner-only and transitions `DRAFT -> FROZEN`.
+  `assess_case(case_id)` accepts `FROZEN` or `RETRYING`, stores the stable
+  projection/digest and observed fields, then transitions to `RESOLVED` or
+  `UNRESOLVED`. `retry_unresolved(case_id)` allows at most two retries.
+  Errors include the invalid-input, duplicate, ownership, state and retry
+  codes implemented in the contract.
+- Views: `get_case(case_id)` returns the complete JSON case projection plus
+  `case_id`; `get_result(case_id)` returns state/outcome, observed
+  repository/tag/commit, source path, digest and retry count; `get_count()`
+  returns `u8`; `get_page(offset, limit)` returns
+  `{offset, limit, items}` with complete case projections and requires
+  `1 <= limit <= PAGE_SIZE`. Addresses render through `Address.as_hex`;
+  repository identities are canonical lowercase `owner/name`; commit IDs
+  are lowercase 40-hex strings.
+- Nondeterminism: `assess_case` calls
+  `gl.vm.run_nondet_unsafe(leader_fn, validator_fn)`. Both callbacks make
+  bounded `gl.nondet.web.get` calls to the canonical npm registry URL,
+  GitHub tag/ref API, optional annotated-tag API and recursive Git tree API.
+  Only HTTP 200 JSON objects within `MAX_RESPONSE` are accepted. The stable
+  projection contains ecosystem, package/version, repository, release tag,
+  commit, source subdirectory and outcome. The validator recomputes it and
+  requires byte-equal canonical JSON; disagreement is not accepted. Transport
+  errors, malformed JSON, wrong package identity/version, unsupported links,
+  missing paths, invalid refs and non-commit targets resolve to
+  `UNRESOLVED`. No raw response, unconstrained prose, provider detail, RPC
+  detail or backend verdict is persisted.
+
 - Stored record: `ReleaseCase` with owner, canonical package/repository identity, expected commit, source subdirectory, bounded state/outcome, observed provenance, evidence digest and retry count.
 - Writes: `create_case`, `freeze_case`, `assess_case`, `retry_unresolved`.
 - Views: `get_case`, `get_result`, `get_count`, `get_page`.
@@ -83,9 +127,8 @@ Every attempted row, including failure, must be retained in the final secret-fre
 ## Blocking items before Studio signing
 
 1. Anonymous `PRE_DEPLOY` verdict is not yet present. No signature, deployment transaction or contract write may be sent until the exact package receives the checkpoint approval required by governance.
-2. The user has authorized deployment generally, but direct confirmation of the `INTENTIONALLY FROZEN` irreversibility decision is still required before signing under Recoverability §7A.
-3. Anonymous approval of the exact detailed E2E plan is required before any Studio write transaction.
-4. The in-app browser is available for Studio operation; visual evidence and live transaction evidence remain outstanding by design.
+2. Anonymous approval of the exact detailed E2E plan is required before any Studio write transaction.
+3. The in-app browser is available for Studio operation; visual evidence and live transaction evidence remain outstanding by design.
 
 ## Recovery boundary
 

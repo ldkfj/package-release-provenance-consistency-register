@@ -204,6 +204,7 @@ def _stable_projection(
     source_subdirectory: str,
 ) -> dict[str, typing.Any]:
     registry = _fetch_json(registry_url)
+    registry_name = registry.get("name") if isinstance(registry, dict) else None
     registry_version = registry.get("version") if isinstance(registry, dict) else None
     repository_value = registry.get("repository") if isinstance(registry, dict) else None
     if isinstance(repository_value, dict):
@@ -220,6 +221,9 @@ def _stable_projection(
         "source_subdirectory": source_subdirectory,
     }
     if not isinstance(registry, dict) or registry.get("ok") is False:
+        base["outcome"] = OUTCOME_UNRESOLVED
+        return base
+    if registry_name != package_name:
         base["outcome"] = OUTCOME_UNRESOLVED
         return base
     if not observed_repository:

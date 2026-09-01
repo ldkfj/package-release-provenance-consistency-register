@@ -40,6 +40,8 @@ export default function App() {
   const [connectingUuid, setConnectingUuid] = useState<string | null>(null);
   const [hash, setHash] = useState<`0x${string}` | null>(null);
   const [chooserOpen, setChooserOpen] = useState(false);
+  const [writeInFlight, setWriteInFlight] = useState(false);
+  const writeInFlightRef = useRef(false);
   const mainRef = useRef<HTMLElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
@@ -176,6 +178,9 @@ export default function App() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!selected || !account) { setError("Choose a wallet before submitting."); return; }
+    if (writeInFlightRef.current) return;
+    writeInFlightRef.current = true;
+    setWriteInFlight(true);
     setError(""); setHash(null); setStatus("Submitting once…");
     try {
       const tx = await sendWrite(selected.provider, account, "create_case", [
@@ -186,8 +191,9 @@ export default function App() {
         form.expectedCommit.toLowerCase(), form.sourceSubdirectory,
       ]);
       setHash(tx); await waitForSuccess(tx, setStatus);
-      const refreshed = await getCase(form.caseId); setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setStatus("Created and verified");
+      const refreshed = await getCase(form.caseId, { finalized: true }); setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setStatus("Created and verified");
     } catch (cause) { setStatus("Needs attention"); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+    finally { writeInFlightRef.current = false; setWriteInFlight(false); }
   }
 
   async function loadCase(event: FormEvent) {
@@ -197,8 +203,12 @@ export default function App() {
 
   async function runWrite(method: "freeze_case" | "assess_case" | "retry_unresolved") {
     if (!selected || !account || !caseId) { setError("Connect a wallet and load a case first."); return; }
+    if (writeInFlightRef.current) return;
+    writeInFlightRef.current = true;
+    setWriteInFlight(true);
     setError(""); setStatus("Submitting once…");
-    try { const tx = await sendWrite(selected.provider, account, method, [caseId]); setHash(tx); await waitForSuccess(tx, setStatus); setResult(await getCase(caseId)); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]); } catch (cause) { setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+    try { const tx = await sendWrite(selected.provider, account, method, [caseId]); setHash(tx); await waitForSuccess(tx, setStatus); setResult(await getCase(caseId, { finalized: true })); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]); } catch (cause) { setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+    finally { writeInFlightRef.current = false; setWriteInFlight(false); }
   }
 
   return <>
@@ -281,7 +291,7 @@ export default function App() {
             <input name="expectedCommit" autoComplete="off" spellCheck={false} required value={form.expectedCommit} onChange={(event) => setForm({ ...form, expectedCommit: event.target.value })} placeholder="40 lowercase hex characters" className="mono-input" />
           </label>
 
-          <button className="primary" type="submit">
+          <button className="primary" type="submit" disabled={writeInFlight}>
             <span>Create case</span>
             <span className="primary-arrow" aria-hidden="true">↗</span>
           </button>
@@ -341,13 +351,13 @@ export default function App() {
             <div className="action-guide">
               <span className="guide-label">Workflow Actions:</span>
               <div className="actions">
-                <button type="button" onClick={() => runWrite("freeze_case")} disabled={result.state !== "DRAFT"} title="Lock inputs to freeze case for consensus assessment">
+                <button type="button" onClick={() => runWrite("freeze_case")} disabled={writeInFlight || result.state !== "DRAFT"} title="Lock inputs to freeze case for consensus assessment">
                   Freeze
                 </button>
-                <button type="button" onClick={() => runWrite("assess_case")} disabled={!(["FROZEN", "RETRYING"].includes(result.state))} title="Trigger GenLayer consensus evaluation">
+                <button type="button" onClick={() => runWrite("assess_case")} disabled={writeInFlight || !(["FROZEN", "RETRYING"].includes(result.state))} title="Trigger GenLayer consensus evaluation">
                   Assess
                 </button>
-                <button type="button" onClick={() => runWrite("retry_unresolved")} disabled={result.state !== "UNRESOLVED" || result.retry_count >= 2} title="Retry consensus evaluation (max 2 retries)">
+                <button type="button" onClick={() => runWrite("retry_unresolved")} disabled={writeInFlight || result.state !== "UNRESOLVED" || result.retry_count >= 2} title="Retry consensus evaluation (max 2 retries)">
                   Retry {result.retry_count}/2
                 </button>
               </div>

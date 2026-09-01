@@ -15,6 +15,7 @@ from package_release_provenance_consistency_register import (
     OUTCOME_SOURCE_LINK_MISSING,
     OUTCOME_UNRESOLVED,
     OUTCOME_VERSION_TAG_MISMATCH,
+    STATE_DRAFT,
     STATE_FROZEN,
     STATE_RESOLVED,
     STATE_UNRESOLVED,
@@ -78,12 +79,12 @@ def response(status=200, data=None):
     return type("Response", (), {"status_code": status, "body": body})()
 
 
-def web_fixture(monkeypatch, *, registry_repo="https://github.com/acme/tool.git", commit=COMMIT, status=200, include_subdirectory=True, raises=False):
+def web_fixture(monkeypatch, *, registry_name=PACKAGE, registry_repo="https://github.com/acme/tool.git", commit=COMMIT, status=200, include_subdirectory=True, raises=False):
     def get(url):
         if raises:
             raise TimeoutError("upstream timeout")
         if url == REGISTRY_URL:
-            return response(status, {"name": PACKAGE, "version": VERSION, "repository": {"url": registry_repo}})
+            return response(status, {"name": registry_name, "version": VERSION, "repository": {"url": registry_repo}})
         if "/git/ref/tags/" in url:
             return response(status, {"object": {"type": "commit", "sha": commit}})
         if "/git/trees/" in url:
@@ -133,6 +134,19 @@ def test_v_prefixed_release_tag_matches(monkeypatch):
     contract.assess_case("case-v")
     result = json.loads(contract.get_result("case-v"))
     assert result["outcome"] == OUTCOME_PROVENANCE_MATCH
+
+
+def test_registry_package_identity_mismatch_fails_closed(monkeypatch):
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(*create_args())
+    contract.freeze_case("case-1")
+    web_fixture(monkeypatch, registry_name="different-package")
+    run_both_callbacks_once(monkeypatch)
+    contract.assess_case("case-1")
+    result = json.loads(contract.get_result("case-1"))
+    assert result["outcome"] == OUTCOME_UNRESOLVED
+    assert result["state"] == STATE_UNRESOLVED
 
 
 def test_nonmatching_release_tag_is_assessed(monkeypatch):
@@ -187,6 +201,52 @@ def test_retry_is_bounded_and_duplicate_provenance_is_rejected(monkeypatch):
     contract.assess_case("case-1")
     with pytest.raises(Exception, match="ERR_RETRY_NOT_ALLOWED"):
         contract.retry_unresolved("case-1")
+
+
+def test_validator_disagreement_is_detected(monkeypatch):
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(*create_args())
+    contract.freeze_case("case-1")
+
+    def run(leader_fn, validator_fn):
+        leader = leader_fn()
+        projection = json.loads(leader)
+        projection["commit_id"] = OTHER_COMMIT
+        conflicting = json.dumps(projection, sort_keys=True, separators=(",", ":"))
+        assert validator_fn(gl.vm.Return(conflicting)) is False
+        return leader
+
+    monkeypatch.setattr(gl.vm, "run_nondet_unsafe", run)
+    web_fixture(monkeypatch)
+    contract.assess_case("case-1")
+    assert json.loads(contract.get_result("case-1"))["outcome"] == OUTCOME_PROVENANCE_MATCH
+
+
+def test_production_shaped_views_are_json_serializable():
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(
+        "case-production-shaped",
+        "npm",
+        "@scope/release-proof",
+        "1.2.3-beta.4+build.9",
+        "https://registry.npmjs.org/@scope%2frelease-proof/1.2.3-beta.4+build.9",
+        "acme",
+        "tool",
+        "https://github.com/acme/tool/releases/tag/1.2.3-beta.4+build.9",
+        COMMIT,
+        "packages/core",
+    )
+    case = json.loads(contract.get_case("case-production-shaped"))
+    result = json.loads(contract.get_result("case-production-shaped"))
+    page = json.loads(contract.get_page(0, 20))
+    assert case["case_id"] == "case-production-shaped"
+    assert case["package_name"] == "@scope/release-proof"
+    assert case["expected_commit_id"] == COMMIT
+    assert result["state"] == STATE_DRAFT
+    assert page["offset"] == 0 and page["limit"] == 20
+    assert page["items"][0]["case_id"] == "case-production-shaped"
 
 
 def test_create_validation_rejects_short_commit_and_path_traversal():
