@@ -20,6 +20,7 @@ This package is for the current exact local revision. It is not a deployment rec
 ## Contract classification and planned deployment
 
 - Classification: `INTENTIONALLY FROZEN`.
+- User frozen-decision confirmation: received directly in this Task on 2026-09-01 — the contract has no upgrade path; a post-deployment defect requires deploying a new contract.
 - Constructor arguments: none (`[]`).
 - Linked contracts: none.
 - Intended network: Studionet.

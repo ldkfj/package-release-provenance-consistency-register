@@ -18,6 +18,9 @@ approval of this exact E2E plan.
 - Unauthorized caller account: `0xeF5D2119416A2f5afa35dCFA209766EFC1BE5902`.
 - Constructor arguments: `[]`; linked contracts: none; classification:
   `INTENTIONALLY FROZEN`.
+- Frozen decision: the user explicitly confirmed in this Task on 2026-09-01 that
+  the contract has no upgrade path and a post-deployment defect requires a new
+  contract deployment.
 - Deployment address and transaction: `NOT YET CREATED`.
 
 ## Live fixture policy
