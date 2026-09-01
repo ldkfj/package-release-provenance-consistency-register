@@ -10,9 +10,10 @@ approval of this exact E2E plan.
 
 ## Exact package and network
 
-- Implementation commit: `2b176faa812e3977f9563933daa5d903c8e42527`.
+- Exact final package revision: `588a61f6920aaa2290bb39ce7ed3c9d3309168eb`.
+- Implementation ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
+- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
 - Network: Studionet; chain ID `61999`; RPC `https://studio.genlayer.com/api`.
 - Studio deployer/owner account: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
 - Unauthorized caller account: `0xeF5D2119416A2f5afa35dCFA209766EFC1BE5902`.

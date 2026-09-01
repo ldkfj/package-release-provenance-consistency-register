@@ -8,10 +8,11 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact Git commit containing the implementation: `2b176faa812e3977f9563933daa5d903c8e42527`.
-- Exact Git tree for the implementation commit: `7c639b0ed08dad060571b99f3c8028464078d42d`.
+- Exact final Git revision for this package: `588a61f6920aaa2290bb39ce7ed3c9d3309168eb`.
+- Exact final Git tree: `603c90697b70c24496ad3c8fc3ba8424a7a7d0f7`.
+- Implementation ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
+- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical research-approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115` (lineage; identity-renamed current file matches after reversing approved substitutions).
@@ -42,13 +43,13 @@ The selected account and intended role were recorded without sending a transacti
 - Runner archive checked: `E:\Genlayer-Tools\GenVM\v0.3.0-rc7`.
 - Runner archive SHA-256: `E218A1854214681560351051F76FE2B878545CF3409455EF372D57014A88CA67`.
 - Schema/lint result: `genvm-lint check contracts/package_release_provenance_consistency_register.py --json` passed; contract discovered with 8 methods, 4 views, 4 writes, and zero constructor parameters.
-- Local contract tests: `gltest -q -p no:cacheprovider` — `11 passed`.
+- Local contract tests: `gltest -q -p no:cacheprovider` — `14 passed`.
 - Static checks: `ruff check contracts tests` — pass.
-- Frontend tests/build: `npm test` — 15 passed across 3 files; `npm run build` — pass.
+- Frontend tests/build: `npm test` — 18 passed across 4 files; `npm run build` — pass.
 - Studio source loading: exact contract file loaded into GenLayer Studio on 2026-09-01; no deployment or write transaction sent.
 - Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
 - Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
-- Claude frontend redesign: Codex reviewed and integrated the bounded redesign plus public-language and form-accessibility corrections; frontend regression/build and contract/runtime verification were rerun at the exact commit.
+- Claude frontend redesign: Codex reviewed and integrated the bounded redesign plus public-language and form-accessibility corrections. The repair revision adds final-state readback, consensus-result gating, balance preflight, registry identity validation, in-flight write locking, and regression coverage; frontend regression/build and contract/runtime verification were rerun at the exact package revision above.
 
 Known version-sensitive warning: the linter reports a newer runner is available. The pinned compatible runner and archive digest are retained; the warning is documented, not suppressed.
 
