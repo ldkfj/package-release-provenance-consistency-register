@@ -6,8 +6,24 @@ is available.
 ```text
 You are redesigning the frontend of the GenLayer project “Package Release Provenance Consistency Register”.
 
-Scope is strictly frontend source/assets only:
-- You may edit: frontend/src/App.tsx, frontend/src/styles.css, frontend/index.html, and frontend public/static image or brand assets required by the redesign.
+Execution context is mandatory:
+- The project root is exactly `E:\Genlayer-Projects\package-release-provenance-consistency-register`.
+- The current functional frontend is at revision `e28ce74f55ec561e60ff53737ce99c43f9c02933`.
+- Do not work in the CLIProxyAPI directory, your default working directory, a copied project, or any other checkout.
+- Before inspecting or editing, change into the project root with `Set-Location -LiteralPath 'E:\Genlayer-Projects\package-release-provenance-consistency-register'` and verify that `git rev-parse --show-toplevel` resolves to that exact directory.
+- Verify that `frontend/src/App.tsx`, `frontend/src/styles.css`, and `frontend/index.html` exist there. Do not ask the user to paste source files. If the exact project root is inaccessible, stop and report the exact path and command error; do not substitute another directory.
+
+Before designing, read only the applicable current guidance (do not edit any of it):
+- `E:\Genlayer\AGENTS.md`
+- `E:\Genlayer\governance\START-HERE.md`
+- `E:\Genlayer\governance\AI-HIERARCHY.md`, especially the Claude handoff section
+- `E:\Genlayer\brain\Engineering and UI Quality Rules.md`, especially `Connect-wallet picker visual reference`, `FRONTEND.WALLET_SELECTOR`, and `FRONTEND.PUBLIC_WALLET_LANGUAGE`
+- `E:\Genlayer\brain\Reusable Frontend Build Patterns.md`, especially the reusable wallet-selector and accessibility patterns
+- Inspect `E:\Genlayer\brain\assets\wallet-selector-reference\connect-wallet-picker-reference.png` before changing the picker hierarchy or interaction pattern.
+- Applicable official GenLayer documentation: `https://docs.genlayer.com/`. Use it only for relevant current frontend/runtime context; it does not authorize changing contract or transaction behavior.
+
+Scope is strictly frontend source/assets only in the exact project root above:
+- You may edit: `frontend/src/App.tsx`, `frontend/src/styles.css`, `frontend/index.html`, and frontend public/static image or brand assets required by the redesign.
 - Do not edit the contract, backend, tests, package manifests/lockfiles, RPC/provider/transaction modules, configuration, governance, deployment files, GitHub/Vercel files, or release/evidence documents.
 - Do not add dependencies.
 - Preserve every existing handler, method name, argument order, readback step, finality/semantic-success guard, bounded polling behavior, selected-wallet routing, and provider isolation behavior. If a UI change needs logic, make the smallest change inside App.tsx only and do not alter the protocol or transaction modules.
