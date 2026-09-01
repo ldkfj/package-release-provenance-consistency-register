@@ -1,21 +1,21 @@
 # Local verification record
 
-Recorded: 2026-08-30
+Recorded: 2026-09-01
 
 This is local build evidence only. It is not a PRE_DEPLOY approval, deployment receipt, live transaction record, or release approval.
 
 ## Exact identity
 
-- Git commit containing the implementation and current pre-deploy package: `0fe227cd496b7cf2446a7a85e4fa40dd65633e09`.
-- Git tree at that commit: `3038c951d2ab8d01321b5ed5e3940c6a326f098c`.
+- Git commit containing the implementation: `4ac5017a0e697426fb5c49fedde3180e262948d4`.
+- Git tree for the implementation commit: `2db6c0eedc064dc78e02472e4aac618933fd7eda`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `628FD6922D9F41BE4254BB5AA25D83671521179622F8236555240BC5212D3106`.
+- Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical approval-bound Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.
 - Historical approval-bound Stage 2 SHA-256: `233F460F6003382FAF459DDCF763C2936C596ECD8183462AC602DFB010AEA21B`.
 
-The current Stage files do not match the historical approval-bound hashes. The implementation therefore remains blocked from PRE_DEPLOY until the exact revision is reconciled or independently re-approved.
+The current Stage files are identity-renamed copies of the historically approved package. Reversing only the approved identity substitutions produced exact content matches for both Stage files (`Stage1Matches=true`, `Stage2Matches=true`); the raw current hashes are recorded because the filenames/display identity changed.
 
 ## Runtime and dependency evidence
 
@@ -40,7 +40,7 @@ ruff check contracts tests
 All checks passed!
 
 PYTHONIOENCODING=utf-8 gltest -q -p no:cacheprovider
-9 passed in 0.09s
+11 passed in 0.12s
 ```
 
 From `frontend`:
@@ -59,4 +59,4 @@ The frontend build reports a non-blocking Vite chunk-size warning for the GenLay
 
 ## Release boundary
 
-No Studio deployment, wallet signing, live transaction, GitHub push, Vercel deployment, user Vercel E2E, or anonymous review checkpoint has been performed in this local build turn.
+No Studio deployment, wallet signing, live transaction, GitHub push, Vercel deployment, user Vercel E2E, or anonymous review checkpoint has been performed in this local build turn. The exact contract source was loaded into Studio read-only on 2026-09-01.

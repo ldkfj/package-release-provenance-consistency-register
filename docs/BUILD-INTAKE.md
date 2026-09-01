@@ -7,7 +7,16 @@
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Prior research approval found for the same product under the historical slug `public-package-release-provenance-consistency-register`: Stage 1 `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`; Stage 2 `233F460F6003382FAF459DDCF763C2936C596ECD8183462AC602DFB010AEA21B`.
-- Handoff status: product intent appears consistent, but the current files are not byte-identical to the approval-bound revisions. This remains an approval-provenance blocker until the exact revision is reconciled or independently re-approved.
+- Handoff status: the current files are an identity-only rename of the historically approved Stage 1/2 package. A read-only normalized comparison, reversing only the historical identity substitutions, matched both approved files exactly; no substantive specification, actor, workflow, API, or acceptance-criteria delta was found.
+
+## Rename-only lineage reconciliation
+
+- User-directed change: rename the project/folder and display identity; only two display names retain the `Public` prefix. No product behavior or scope change was requested.
+- Historical approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.
+- Historical approved Stage 2 SHA-256: `233F460F6003382FAF459DDCF763C2936C596ECD8183462AC602DFB010AEA21B`.
+- Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
+- Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
+- Reconciliation result: `Stage1Matches=true`, `Stage2Matches=true` after reversing only the approved identity/path substitutions. This preserves approval lineage; it is not a claim that raw hashes are unchanged.
 
 ## Current runtime check
 
@@ -40,8 +49,9 @@
 - GenVM runner pinning and text-runner prologue: applied to the pinned archive record, `# v0.1.0` header, and pre-PRE_DEPLOY schema probe.
 - GenLayer finality from the GenLayer transaction object: applied to the shared frontend transaction reconciliation design; use `FINALIZED` plus semantic execution success and authoritative readback.
 - Current SDK user errors: `gl.UserError` was rejected by the installed runtime; the contract now raises `gl.vm.UserError`, with a direct-mode regression for validation/rejection paths.
+- Release-tag reachability correction: the initial create validation required only the expected tag and made the specified `VERSION_TAG_MISMATCH` outcome unreachable. The current contract validates a bounded canonical GitHub release-tag URL, then compares its tag during assessment against `version` or `v+version`; regression coverage proves both the `v` match and mismatch paths.
 - Frontend implementation: static React/Vite app with project-local `genlayer-js==1.1.8`, EIP-6963 provider discovery, selected-provider writes, bounded transaction reconciliation, and contract readback.
-- Frontend verification: `npm test` passed 2 files / 5 tests; `npm run build` passed; local HTTP smoke returned `200` for `/` and `/case/case-1` with SPA fallback. In-app browser visual inspection was attempted but unavailable because browser bootstrap failed before session creation (`failed to write kernel assets`); no visual acceptance is claimed.
+- Frontend verification: `npm test` passed 2 files / 5 tests; `npm run build` passed; local HTTP smoke returned `200` for `/` and `/case/case-1` with SPA fallback. In-app Browser is now available and the exact source was loaded read-only on 2026-09-01; visual acceptance and live transaction evidence remain outstanding by design.
 
 ## Official documentation checked
 

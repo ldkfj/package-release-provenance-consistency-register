@@ -1,6 +1,6 @@
 # PRE_DEPLOY package — Studio preparation
 
-Status: `BLOCKED_PENDING_ANONYMOUS_APPROVAL`
+Status: `PENDING_ANONYMOUS_APPROVAL`
 
 This package is for the current exact local revision. It is not a deployment receipt and contains no signing or transaction authorization.
 
@@ -8,14 +8,14 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact Git commit containing this pre-deploy package: `0fe227cd496b7cf2446a7a85e4fa40dd65633e09`.
-- Exact Git tree: `3038c951d2ab8d01321b5ed5e3940c6a326f098c`.
+- Exact Git commit containing the implementation: `4ac5017a0e697426fb5c49fedde3180e262948d4`.
+- Exact Git tree for the implementation commit: `2db6c0eedc064dc78e02472e4aac618933fd7eda`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `628FD6922D9F41BE4254BB5AA25D83671521179622F8236555240BC5212D3106`.
+- Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
-- Historical research-approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.
-- Historical research-approved Stage 2 SHA-256: `233F460F6003382FAF459DDCF763C2936C596ECD8183462AC602DFB010AEA21B`.
+- Historical research-approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115` (lineage; identity-renamed current file matches after reversing approved substitutions).
+- Historical research-approved Stage 2 SHA-256: `233F460F6003382FAF459DDCF763C2936C596ECD8183462AC602DFB010AEA21B` (lineage; identity-renamed current file matches after reversing approved substitutions).
 
 ## Contract classification and planned deployment
 
@@ -41,10 +41,11 @@ The selected account and intended role were recorded without sending a transacti
 - Runner archive checked: `E:\Genlayer-Tools\GenVM\v0.3.0-rc7`.
 - Runner archive SHA-256: `E218A1854214681560351051F76FE2B878545CF3409455EF372D57014A88CA67`.
 - Schema/lint result: `genvm-lint check contracts/package_release_provenance_consistency_register.py --json` passed; contract discovered with 8 methods, 4 views, 4 writes, and zero constructor parameters.
-- Local contract tests: `gltest -q -p no:cacheprovider` — `9 passed`.
+- Local contract tests: `gltest -q -p no:cacheprovider` — `11 passed`.
 - Static checks: `ruff check contracts tests` — pass.
 - Frontend tests/build: `npm test` — 5 passed; `npm run build` — pass.
 - Studio source loading: exact contract file loaded into GenLayer Studio on 2026-09-01; no deployment or write transaction sent.
+- Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
 
 Known version-sensitive warning: the linter reports a newer runner is available. The pinned compatible runner and archive digest are retained; the warning is documented, not suppressed.
 
@@ -68,15 +69,20 @@ The following rows are the planned live proof matrix. Each row must receive actu
 | S3 | Owner freeze is authorized | selected deployer / owner | `freeze_case(S1)` | `FINALIZED`, execution success, `get_result` shows `FROZEN` |
 | S4 | Exact release provenance reaches substantive match | selected deployer / permissionless assessor | `assess_case(S1)` | `FINALIZED`, leader execution success, consensus agreement, `PROVENANCE_MATCH` readback with digest/observed commit |
 | S5 | Upstream unavailability is fail-closed and retry is bounded | selected deployer / registrant | fresh valid case with unavailable registry fixture, then `assess_case`, `retry_unresolved` | `UNRESOLVED` readback, one retry transition, no false substantive denial; no third retry |
-| S6 | Duplicate provenance and malformed boundaries are rejected | selected deployer / registrant | duplicate `create_case` and invalid-argument controls | expected rejections with unchanged count/readback; deterministic boundary cases remain covered locally |
+| S6 | Version tag mismatch is classified | selected deployer / permissionless assessor | fresh case with same package/version but release URL tag `9.9.9`, then `assess_case` | `FINALIZED`, semantic success, `VERSION_TAG_MISMATCH` readback |
+| S7 | Repository mismatch is classified | selected deployer / permissionless assessor | fresh case with registry repository `other/tool`, then `assess_case` | `FINALIZED`, semantic success, `REPOSITORY_MISMATCH` readback |
+| S8 | Commit mismatch is classified | selected deployer / permissionless assessor | fresh case with valid registry/repository/tag but wrong expected commit, then `assess_case` | `FINALIZED`, semantic success, `COMMIT_MISMATCH` readback |
+| S9 | Missing source link is classified | selected deployer / permissionless assessor | fresh case with malformed/missing registry repository link, then `assess_case` | `FINALIZED`, semantic success, `SOURCE_LINK_MISSING` readback |
+| S10 | Duplicate provenance and malformed boundaries are rejected | selected deployer / registrant | duplicate `create_case` and invalid-argument controls | expected rejections with unchanged count/readback; deterministic boundary cases remain covered locally |
 
 Every attempted row, including failure, must be retained in the final secret-free evidence ledger. A transaction is not a pass from a button click, submission hash, `FINALIZED` alone, or UI label; it requires execution result, consensus/finality and authoritative readback.
 
 ## Blocking items before Studio signing
 
-1. Current Stage 1/2 files do not match the historical research-approved exact hashes. The current revision must be reconciled to those bytes or independently re-approved as the current specification baseline.
-2. Anonymous `PRE_DEPLOY` verdict is not yet present. No signature, deployment transaction or contract write may be sent until the exact package receives the checkpoint approval required by governance.
-3. The in-app browser is available now for Studio operation; visual evidence and live transaction evidence remain outstanding by design.
+1. Anonymous `PRE_DEPLOY` verdict is not yet present. No signature, deployment transaction or contract write may be sent until the exact package receives the checkpoint approval required by governance.
+2. The user has authorized deployment generally, but direct confirmation of the `INTENTIONALLY FROZEN` irreversibility decision is still required before signing under Recoverability §7A.
+3. Anonymous approval of the exact detailed E2E plan is required before any Studio write transaction.
+4. The in-app browser is available for Studio operation; visual evidence and live transaction evidence remain outstanding by design.
 
 ## Recovery boundary
 
