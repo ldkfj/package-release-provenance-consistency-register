@@ -6,8 +6,8 @@ This is local build evidence only. It is not a PRE_DEPLOY approval, deployment r
 
 ## Exact identity
 
-- Git commit containing the implementation: `8ac3a3c07dc25d392aa5975558e09801451239af`.
-- Git tree for the implementation commit: `d9af4b357bc77ca675c2b68763bd5bbb5c1d0e62`.
+- Git commit containing the implementation: `2b176faa812e3977f9563933daa5d903c8e42527`.
+- Git tree for the implementation commit: `7c639b0ed08dad060571b99f3c8028464078d42d`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
