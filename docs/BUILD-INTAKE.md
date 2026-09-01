@@ -51,7 +51,8 @@
 - Current SDK user errors: `gl.UserError` was rejected by the installed runtime; the contract now raises `gl.vm.UserError`, with a direct-mode regression for validation/rejection paths.
 - Release-tag reachability correction: the initial create validation required only the expected tag and made the specified `VERSION_TAG_MISMATCH` outcome unreachable. The current contract validates a bounded canonical GitHub release-tag URL, then compares its tag during assessment against `version` or `v+version`; regression coverage proves both the `v` match and mismatch paths.
 - Frontend implementation: static React/Vite app with project-local `genlayer-js==1.1.8`, EIP-6963 provider discovery, selected-provider writes, bounded transaction reconciliation, and contract readback.
-- Frontend verification: `npm test` passed 2 files / 5 tests; `npm run build` passed; local HTTP smoke returned `200` for `/` and `/case/case-1` with SPA fallback. In-app Browser is now available and the exact source was loaded read-only on 2026-09-01; visual acceptance and live transaction evidence remain outstanding by design.
+- Wallet picker correction: explicit three-wallet selection (MetaMask, OKX Wallet, Rabby), page-lifetime discovery/deduplication, bounded legacy fallback, inline connection errors, disconnect/account/network invalidation, reload-disconnected state, focus trap/restoration and inert background are implemented without new dependencies.
+- Frontend verification: `npm test` passed 3 files / 15 tests; `npm run build` passed; local HTTP smoke returned `200` for `/` and `/case/case-1` with SPA fallback. In-app Browser inspected the no-provider picker state on 2026-09-01; live wallet-option visual evidence and live transaction evidence remain outstanding by design.
 
 ## Official documentation checked
 

@@ -8,8 +8,8 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact Git commit containing the implementation: `4ac5017a0e697426fb5c49fedde3180e262948d4`.
-- Exact Git tree for the implementation commit: `2db6c0eedc064dc78e02472e4aac618933fd7eda`.
+- Exact Git commit containing the implementation: `8ac3a3c07dc25d392aa5975558e09801451239af`.
+- Exact Git tree for the implementation commit: `d9af4b357bc77ca675c2b68763bd5bbb5c1d0e62`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
@@ -43,9 +43,10 @@ The selected account and intended role were recorded without sending a transacti
 - Schema/lint result: `genvm-lint check contracts/package_release_provenance_consistency_register.py --json` passed; contract discovered with 8 methods, 4 views, 4 writes, and zero constructor parameters.
 - Local contract tests: `gltest -q -p no:cacheprovider` — `11 passed`.
 - Static checks: `ruff check contracts tests` — pass.
-- Frontend tests/build: `npm test` — 5 passed; `npm run build` — pass.
+- Frontend tests/build: `npm test` — 15 passed across 3 files; `npm run build` — pass.
 - Studio source loading: exact contract file loaded into GenLayer Studio on 2026-09-01; no deployment or write transaction sent.
 - Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
+- Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
 
 Known version-sensitive warning: the linter reports a newer runner is available. The pinned compatible runner and archive digest are retained; the warning is documented, not suppressed.
 

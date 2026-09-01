@@ -6,8 +6,8 @@ This is local build evidence only. It is not a PRE_DEPLOY approval, deployment r
 
 ## Exact identity
 
-- Git commit containing the implementation: `4ac5017a0e697426fb5c49fedde3180e262948d4`.
-- Git tree for the implementation commit: `2db6c0eedc064dc78e02472e4aac618933fd7eda`.
+- Git commit containing the implementation: `8ac3a3c07dc25d392aa5975558e09801451239af`.
+- Git tree for the implementation commit: `d9af4b357bc77ca675c2b68763bd5bbb5c1d0e62`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
@@ -47,15 +47,15 @@ From `frontend`:
 
 ```text
 npm test
-Test Files  2 passed (2)
-Tests       5 passed (5)
+Test Files  3 passed (3)
+Tests       15 passed (15)
 
 npm run build
 465 modules transformed.
 built successfully
 ```
 
-The frontend build reports a non-blocking Vite chunk-size warning for the GenLayerJS bundle. Local HTTP smoke returned `200` for `/` and `/case/case-1`, including SPA fallback. In-app browser bootstrap failed before a session was created (`failed to write kernel assets`), so no visual browser acceptance is claimed.
+The frontend build reports a non-blocking Vite chunk-size warning for the GenLayerJS bundle. Local HTTP smoke returned `200` for `/` and `/case/case-1`, including SPA fallback. In-app Browser inspected the no-provider picker state and confirmed that opening it does not expose internal implementation text; live injected-wallet rendering remains outstanding.
 
 ## Release boundary
 
