@@ -121,8 +121,12 @@ def _canonical_registry_url(package_name: str, version: str) -> str:
     return NPM_REGISTRY_PREFIX + encoded_name + "/" + version
 
 
-def _canonical_release_url(owner: str, name: str, version: str) -> str:
-    return GITHUB_REPO_PREFIX + owner + "/" + name + "/releases/tag/" + version
+def _valid_release_url(owner: str, name: str, value: str) -> bool:
+    prefix = GITHUB_REPO_PREFIX + owner + "/" + name + "/releases/tag/"
+    if not isinstance(value, str) or len(value) > MAX_URL or not value.startswith(prefix):
+        return False
+    tag = value[len(prefix):]
+    return _valid_version(tag) and "/" not in tag and "?" not in tag and "#" not in tag
 
 
 def _parse_repo_url(value: typing.Any) -> str:
@@ -333,7 +337,7 @@ class PackageReleaseProvenanceConsistencyRegister(gl.Contract):
         owner = repository_owner.lower()
         name = repository_name.lower()
         frozen_repository = _repo_identity(owner, name)
-        if release_url != _canonical_release_url(owner, name, version) or len(release_url) > MAX_URL:
+        if not _valid_release_url(owner, name, release_url):
             _fail("ERR_INVALID_RELEASE_URL")
         if not _is_lower_hex_commit(expected_commit_id):
             _fail("ERR_INVALID_COMMIT")

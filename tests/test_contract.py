@@ -14,6 +14,7 @@ from package_release_provenance_consistency_register import (
     OUTCOME_REPOSITORY_MISMATCH,
     OUTCOME_SOURCE_LINK_MISSING,
     OUTCOME_UNRESOLVED,
+    OUTCOME_VERSION_TAG_MISMATCH,
     STATE_FROZEN,
     STATE_RESOLVED,
     STATE_UNRESOLVED,
@@ -68,8 +69,8 @@ def new_contract():
     return deploy_contract(path, wasi_mock.get_vm())
 
 
-def create_args(case_id="case-1", expected=COMMIT, subdirectory="src"):
-    return (case_id, "npm", PACKAGE, VERSION, REGISTRY_URL, "acme", "tool", RELEASE_URL, expected, subdirectory)
+def create_args(case_id="case-1", expected=COMMIT, subdirectory="src", release_url=RELEASE_URL):
+    return (case_id, "npm", PACKAGE, VERSION, REGISTRY_URL, "acme", "tool", release_url, expected, subdirectory)
 
 
 def response(status=200, data=None):
@@ -120,6 +121,30 @@ def test_create_freeze_and_match_projection(monkeypatch):
     assert result["state"] == STATE_RESOLVED
     assert result["outcome"] == OUTCOME_PROVENANCE_MATCH
     assert result["observed_commit_id"] == COMMIT
+
+
+def test_v_prefixed_release_tag_matches(monkeypatch):
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(*create_args(case_id="case-v", release_url=f"https://github.com/acme/tool/releases/tag/v{VERSION}"))
+    contract.freeze_case("case-v")
+    web_fixture(monkeypatch)
+    run_both_callbacks_once(monkeypatch)
+    contract.assess_case("case-v")
+    result = json.loads(contract.get_result("case-v"))
+    assert result["outcome"] == OUTCOME_PROVENANCE_MATCH
+
+
+def test_nonmatching_release_tag_is_assessed(monkeypatch):
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(*create_args(case_id="case-tag", release_url="https://github.com/acme/tool/releases/tag/9.9.9"))
+    contract.freeze_case("case-tag")
+    web_fixture(monkeypatch)
+    run_both_callbacks_once(monkeypatch)
+    contract.assess_case("case-tag")
+    result = json.loads(contract.get_result("case-tag"))
+    assert result["outcome"] == OUTCOME_VERSION_TAG_MISMATCH
 
 
 @pytest.mark.parametrize(
