@@ -6,13 +6,13 @@ This is local build evidence only. It is not a PRE_DEPLOY approval, deployment r
 
 ## Exact identity
 
-- Exact reviewed source revision: `2f717667ae41f924a46547b549c302f0d382d784`.
-- Exact reviewed source tree: `785a3d157c30d33fc6918653d8e5bf43cfe37499`.
+- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
+- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
 - The external reviewer package binds the verification record to the exact
   package commit; these literal values identify the reviewed source content.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
+- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical approval-bound Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.

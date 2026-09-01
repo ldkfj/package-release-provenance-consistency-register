@@ -8,14 +8,14 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact reviewed source revision: `2f717667ae41f924a46547b549c302f0d382d784`.
-- Exact reviewed source tree: `785a3d157c30d33fc6918653d8e5bf43cfe37499`.
+- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
+- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
 - The external reviewer package additionally binds this document set to the
   exact package commit; the source revision/tree above are the literal
   contract/frontend content identity used for review.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
+- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical research-approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115` (lineage; identity-renamed current file matches after reversing approved substitutions).
@@ -34,8 +34,8 @@ This package is for the current exact local revision. It is not a deployment rec
 - Selected Studio deployer account: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
 - Selected account role: deployer and owner of cases created during the primary Studio journey; no upgrade authority is claimed.
 - Observed Studio balance at selection: `10.001 GEN`.
-- Contract address: `NOT YET CREATED`.
-- Deployment transaction: `NOT YET CREATED`.
+- Contract address for this exact source: `NOT YET CREATED`.
+- Deployment transaction for this exact source: `NOT YET CREATED`.
 
 The selected account and intended role were recorded without sending a transaction. If the account changes, identity/signing-dependent evidence must be revalidated before deployment.
 
@@ -49,7 +49,9 @@ The selected account and intended role were recorded without sending a transacti
 - Local contract tests: `gltest -q -p no:cacheprovider` — `14 passed`.
 - Static checks: `ruff check contracts tests` — pass.
 - Frontend tests/build: `npm test` — 22 passed across 4 files; `npm run build` — pass.
-- Studio source loading: exact contract file loaded into GenLayer Studio on 2026-09-01; no deployment or write transaction sent.
+- Studio source loading: exact repaired contract file was loaded and parity-checked in GenLayer Studio on 2026-09-01.
+- Superseded diagnostic deployment (not release evidence): address `0x11f6622863D71929c0bf30D6d984528f588486E5`, deployment transaction `0xe254a1c4129c2b99f67957bafc4b09d815d27d72ebbbc1d4cc998b019b2409f2`, and baseline `create_case` transaction `0x4a2975de652660689ef0a4b352e59236b723dbe34f9b57faf821f1ca365bc5a4` both finalized with successful consensus/execution. Authoritative `get_case`/`get_page` showed the stored `DRAFT` case, but `get_count` remained `0` instead of `1`; this deployment is rejected and will not be used by the frontend or release.
+- Live repair: the persisted `case_count` constructor initialization changed from plain `0` to typed `u8(0)`, with a regression asserting both `get_count=1` and the case-page readback after creation. Fresh PRE_DEPLOY approval and a new frozen deployment are required.
 - Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
 - Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
 - Claude frontend redesign: Codex reviewed and integrated the bounded redesign plus public-language and form-accessibility corrections. The repair revision adds final-state readback, consensus-result gating, balance preflight, registry identity validation, in-flight write locking, and regression coverage; frontend regression/build and contract/runtime verification were rerun at the exact package revision above.

@@ -10,13 +10,13 @@ approval of this exact E2E plan.
 
 ## Exact package and network
 
-- Exact reviewed source revision: `2f717667ae41f924a46547b549c302f0d382d784`.
-- Exact reviewed source tree: `785a3d157c30d33fc6918653d8e5bf43cfe37499`.
+- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
+- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
 - The external reviewer package binds the complete plan to the exact package
   commit before Studio execution.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
+- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
 - Network: Studionet; chain ID `61999`; RPC `https://studio.genlayer.com/api`.
 - Studio deployer/owner account: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
 - Unauthorized caller account: `0xeF5D2119416A2f5afa35dCFA209766EFC1BE5902`.
@@ -25,7 +25,12 @@ approval of this exact E2E plan.
 - Frozen decision: the user explicitly confirmed in this Task on 2026-09-01 that
   the contract has no upgrade path and a post-deployment defect requires a new
   contract deployment.
-- Deployment address and transaction: `NOT YET CREATED`.
+- Deployment address and transaction for this repaired exact source: `NOT YET CREATED`.
+
+The prior diagnostic deployment is superseded and excluded: its finalized
+`create_case` stored the case but its finalized `get_count` readback remained
+zero. The repaired source uses typed scalar initialization and must receive a
+fresh PRE_DEPLOY approval before live execution.
 
 ## Live fixture policy
 
