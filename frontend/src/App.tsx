@@ -21,6 +21,11 @@ const providerDescriptions: Record<string, string> = {
   Rabby: "Secure browser wallet",
 };
 
+function formatAccount(address: string | null): string {
+  if (!address) return "";
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
 export default function App() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [selected, setSelected] = useState<ProviderInfo | null>(null);
@@ -110,7 +115,7 @@ export default function App() {
     if (/network|chain/i.test(raw)) return "Your wallet is on the wrong network. Reconnect and try again.";
     if (/429|rate|busy|timeout|unavailable/i.test(raw)) return "The service is busy right now. Wait a moment and try again once.";
     if (/ERR_|contract|RPC|transaction|readback|provider|request|hash/i.test(raw)) return fallback;
-    return raw || fallback;
+    return fallback;
   }
 
   function openPicker() {
@@ -198,14 +203,227 @@ export default function App() {
 
   return <>
   <main ref={mainRef}>
-    <header className="topbar"><div><span className="eyebrow">GENLAYER · STUDIONET</span><h1>Provenance Register</h1></div><button ref={connectButtonRef} className="wallet" type="button" onClick={openPicker}>{connectedLabel}</button></header>
-    <section className="hero"><div><p className="eyebrow">Release integrity, made inspectable</p><h2>Bind a package version to the source release it claims.</h2><p className="lede">A consensus-verified register for registry metadata, GitHub tags, immutable commits, and source subdirectories.</p></div><div className="stat"><span>Registered cases</span><strong>{count ?? "—"}</strong></div></section>
-    <section className="workspace"><div className="panel"><div className="panel-head"><div><span className="eyebrow">01 · REGISTER</span><h3>Freeze provenance inputs</h3></div><span className="status-dot">{status}</span></div><form onSubmit={submit} className="form-grid">
-      {(["caseId", "packageName", "version", "repositoryOwner", "repositoryName", "expectedCommit", "sourceSubdirectory"] as const).map((field) => <label key={field}>{field === "expectedCommit" ? "Expected full commit" : field.replace(/[A-Z]/g, (letter) => ` ${letter}`).replace(/^./, (letter) => letter.toUpperCase())}<input required value={form[field]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} placeholder={field === "expectedCommit" ? "40 lowercase hex characters" : field === "sourceSubdirectory" ? "src" : ""} /></label>)}
-      <button className="primary" type="submit">Create case <span>↗</span></button>
-    </form></div><div className="panel detail"><div className="panel-head"><div><span className="eyebrow">02 · INSPECT</span><h3>Case detail</h3></div><span className="state">{result?.state ?? "NO CASE LOADED"}</span></div><form onSubmit={loadCase} className="lookup"><input value={caseId} onChange={(event) => setCaseId(event.target.value)} placeholder="Enter case ID" /><button className="secondary">Load</button></form>{result ? <div className="result"><div className="outcome">{result.outcome || "Awaiting assessment"}</div><dl><div><dt>Package</dt><dd>{result.package_name}@{result.version}</dd></div><div><dt>Repository</dt><dd>{result.repository_owner}/{result.repository_name}</dd></div><div><dt>Expected commit</dt><dd className="mono">{result.expected_commit_id}</dd></div><div><dt>Observed commit</dt><dd className="mono">{result.observed_commit_id || "—"}</dd></div></dl><div className="actions"><button onClick={() => runWrite("freeze_case")} disabled={result.state !== "DRAFT"}>Freeze</button><button onClick={() => runWrite("assess_case")} disabled={!(["FROZEN", "RETRYING"].includes(result.state))}>Assess</button><button onClick={() => runWrite("retry_unresolved")} disabled={result.state !== "UNRESOLVED" || result.retry_count >= 2}>Retry {result.retry_count}/2</button></div></div> : <p className="empty">Load a frozen case to inspect its independently derived result.</p>}</div></section>
-    {error && <div className="alert" role="alert">{error}</div>}{hash && <div className="receipt"><span>Transaction</span><a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer">{hash}</a></div>}
+    <header className="topbar">
+      <div className="brand-group">
+        <img src="/logo.svg" alt="" width="38" height="38" className="brand-logo" />
+        <div className="brand-copy">
+          <div className="brand-eyebrow-row">
+            <span className="eyebrow">GENLAYER · STUDIONET</span>
+            <span className="network-pill"><span className="pulse-dot"></span>Studionet Live</span>
+          </div>
+          <h1>Provenance Register</h1>
+        </div>
+      </div>
+      <div className="topbar-actions">
+        {account && <span className="account-chip" title={account}><span className="account-dot"></span>{formatAccount(account)}</span>}
+        <button ref={connectButtonRef} className="wallet" type="button" onClick={openPicker}>{connectedLabel}</button>
+      </div>
+    </header>
+
+    <section className="hero">
+      <div className="hero-content">
+        <div className="hero-badge">
+          <span className="badge-icon">🛡️</span>
+          <p className="eyebrow">Release integrity, made inspectable</p>
+        </div>
+        <h2>Bind a package version to the source release it claims.</h2>
+        <p className="lede">A consensus-verified register for registry metadata, GitHub tags, immutable commits, and source subdirectories.</p>
+      </div>
+      <div className="stat">
+        <span className="stat-label">Registered cases</span>
+        <strong className="stat-value">{count ?? "—"}</strong>
+        <span className="stat-meta">Studionet Consensus</span>
+      </div>
+    </section>
+
+    <section className="workspace">
+      <div className="panel">
+        <div className="panel-head">
+          <div>
+            <span className="eyebrow">01 · REGISTER</span>
+            <h3>Freeze provenance inputs</h3>
+            <p className="panel-subtitle">Create a verifiable draft case binding an npm release to its source repository.</p>
+          </div>
+          <span className="status-dot">{status}</span>
+        </div>
+        <form onSubmit={submit} className="form-grid">
+          <div className="form-section-title">Case &amp; Package Identification</div>
+          <label className="field-group">
+            <span className="field-label">Case ID</span>
+            <input name="caseId" autoComplete="off" required value={form.caseId} onChange={(event) => setForm({ ...form, caseId: event.target.value })} placeholder="e.g. pr-pkg-001" />
+          </label>
+          <label className="field-group">
+            <span className="field-label">Package Name</span>
+            <input name="packageName" autoComplete="off" required value={form.packageName} onChange={(event) => setForm({ ...form, packageName: event.target.value })} placeholder="e.g. lodash" />
+          </label>
+          <label className="field-group">
+            <span className="field-label">Version</span>
+            <input name="version" autoComplete="off" required value={form.version} onChange={(event) => setForm({ ...form, version: event.target.value })} placeholder="e.g. 4.17.21" />
+          </label>
+
+          <div className="form-section-title">Source Repository Specification</div>
+          <label className="field-group">
+            <span className="field-label">Repository Owner</span>
+            <input name="repositoryOwner" autoComplete="off" required value={form.repositoryOwner} onChange={(event) => setForm({ ...form, repositoryOwner: event.target.value })} placeholder="e.g. lodash" />
+          </label>
+          <label className="field-group">
+            <span className="field-label">Repository Name</span>
+            <input name="repositoryName" autoComplete="off" required value={form.repositoryName} onChange={(event) => setForm({ ...form, repositoryName: event.target.value })} placeholder="e.g. lodash" />
+          </label>
+          <label className="field-group">
+            <span className="field-label">Source Subdirectory</span>
+            <input name="sourceSubdirectory" autoComplete="off" value={form.sourceSubdirectory} onChange={(event) => setForm({ ...form, sourceSubdirectory: event.target.value })} placeholder="e.g. packages/core or leave blank for root" />
+          </label>
+
+          <div className="form-section-title">Cryptographic Provenance Target</div>
+          <label className="field-group field-full">
+            <span className="field-label">Expected Full Commit (40 hex chars)</span>
+            <input name="expectedCommit" autoComplete="off" spellCheck={false} required value={form.expectedCommit} onChange={(event) => setForm({ ...form, expectedCommit: event.target.value })} placeholder="40 lowercase hex characters" className="mono-input" />
+          </label>
+
+          <button className="primary" type="submit">
+            <span>Create case</span>
+            <span className="primary-arrow" aria-hidden="true">↗</span>
+          </button>
+        </form>
+      </div>
+
+      <div className="panel detail">
+        <div className="panel-head">
+          <div>
+            <span className="eyebrow">02 · INSPECT</span>
+            <h3>Case detail</h3>
+            <p className="panel-subtitle">Retrieve on-chain case state, execute consensus validation, and verify provenance.</p>
+          </div>
+          <span className={`state state-${result?.state?.toLowerCase() ?? "empty"}`}>{result?.state ?? "NO CASE LOADED"}</span>
+        </div>
+
+        <form onSubmit={loadCase} className="lookup" role="search" aria-label="Load case by ID">
+          <input name="lookupCaseId" autoComplete="off" value={caseId} onChange={(event) => setCaseId(event.target.value)} placeholder="Enter case ID to inspect…" aria-label="Case ID" />
+          <button className="secondary" type="submit">Load Case</button>
+        </form>
+
+        {result ? (
+          <div className="result">
+            <div className={`outcome outcome-${result.state?.toLowerCase() ?? "pending"}`}>
+              <div className="outcome-header">
+                <span className="outcome-tag">Consensus Result</span>
+                <span className="outcome-state-badge">{result.state}</span>
+              </div>
+              <div className="outcome-text">{result.outcome || "Awaiting assessment"}</div>
+            </div>
+
+            <dl className="spec-list">
+              <div className="spec-item">
+                <dt>Package</dt>
+                <dd className="spec-val"><span className="pkg-badge">{result.package_name}@{result.version}</span></dd>
+              </div>
+              <div className="spec-item">
+                <dt>Repository</dt>
+                <dd className="spec-val">{result.repository_owner}/{result.repository_name}</dd>
+              </div>
+              <div className="spec-item">
+                <dt>Expected commit</dt>
+                <dd className="mono spec-val">{result.expected_commit_id}</dd>
+              </div>
+              <div className="spec-item">
+                <dt>Observed commit</dt>
+                <dd className="mono spec-val">{result.observed_commit_id || "—"}</dd>
+              </div>
+              {result.source_subdirectory && (
+                <div className="spec-item">
+                  <dt>Source subdirectory</dt>
+                  <dd className="spec-val mono">{result.source_subdirectory}</dd>
+                </div>
+              )}
+            </dl>
+
+            <div className="action-guide">
+              <span className="guide-label">Workflow Actions:</span>
+              <div className="actions">
+                <button type="button" onClick={() => runWrite("freeze_case")} disabled={result.state !== "DRAFT"} title="Lock inputs to freeze case for consensus assessment">
+                  Freeze
+                </button>
+                <button type="button" onClick={() => runWrite("assess_case")} disabled={!(["FROZEN", "RETRYING"].includes(result.state))} title="Trigger GenLayer consensus evaluation">
+                  Assess
+                </button>
+                <button type="button" onClick={() => runWrite("retry_unresolved")} disabled={result.state !== "UNRESOLVED" || result.retry_count >= 2} title="Retry consensus evaluation (max 2 retries)">
+                  Retry {result.retry_count}/2
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">📂</div>
+            <p className="empty">Load a frozen case to inspect its independently derived result.</p>
+          </div>
+        )}
+      </div>
+    </section>
+
+    {error && (
+      <div className="alert" role="alert">
+        <span className="alert-icon">⚠️</span>
+        <div className="alert-body">
+          <strong>Notice:</strong> {error}
+        </div>
+      </div>
+    )}
+
+    {hash && (
+      <div className="receipt">
+        <div className="receipt-head">
+          <span className="receipt-dot"></span>
+          <span>Transaction</span>
+        </div>
+        <a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer" className="receipt-link">
+          <span className="receipt-hash">{hash}</span>
+          <span className="receipt-arrow">↗</span>
+        </a>
+      </div>
+    )}
   </main>
-  {chooserOpen && <div className="backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closePicker()}><section ref={dialogRef} className="chooser" role="dialog" aria-modal="true" aria-labelledby="chooser-title" tabIndex={-1} onKeyDown={handlePickerKeyDown}><button className="close" type="button" aria-label="Close wallet chooser" onClick={closePicker}>×</button><span className="eyebrow">SECURE CONNECTION</span><h3 id="chooser-title">Choose a wallet</h3>{connectionError && <p className="chooser-error" role="alert" aria-live="assertive">{connectionError}</p>}{providers.length ? <div className="provider-list">{providers.map((provider) => <button className="provider" type="button" data-wallet-option key={provider.uuid} disabled={Boolean(connectingUuid)} onClick={() => connect(provider)}><img src={provider.icon} alt="" width="32" height="32" /><span className="provider-copy"><strong>{provider.name}</strong><small>{providerDescriptions[provider.name]}</small></span><span className="provider-arrow" aria-hidden="true">→</span></button>)}</div> : <p className="empty">No compatible wallet was found. Install a supported wallet and try again.</p>}<button className="picker-cancel" type="button" onClick={closePicker}>Cancel</button></section></div>}
+
+  {chooserOpen && (
+    <div className="backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closePicker()}>
+      <section ref={dialogRef} className="chooser" role="dialog" aria-modal="true" aria-labelledby="chooser-title" tabIndex={-1} onKeyDown={handlePickerKeyDown}>
+        <button className="close" type="button" aria-label="Close wallet chooser" onClick={closePicker}>×</button>
+        <div className="chooser-header">
+          <span className="eyebrow">SECURE CONNECTION</span>
+          <h3 id="chooser-title">Choose a wallet</h3>
+          <p className="chooser-desc">Select a wallet to interact with the provenance register on Studionet.</p>
+        </div>
+
+        {connectionError && <p className="chooser-error" role="alert" aria-live="assertive">{connectionError}</p>}
+
+        {providers.length ? (
+          <div className="provider-list">
+            {providers.map((provider) => (
+              <button
+                className="provider"
+                type="button"
+                data-wallet-option
+                key={provider.uuid}
+                disabled={Boolean(connectingUuid)}
+                onClick={() => connect(provider)}
+              >
+                <img src={provider.icon} alt="" width="36" height="36" className="provider-icon" />
+                <span className="provider-copy">
+                  <strong>{provider.name}</strong>
+                  <small>{providerDescriptions[provider.name]}</small>
+                </span>
+                <span className="provider-arrow" aria-hidden="true">→</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="empty">No compatible wallet was found. Install a supported wallet and try again.</p>
+        )}
+
+        <button className="picker-cancel" type="button" onClick={closePicker}>Cancel</button>
+      </section>
+    </div>
+  )}
   </>;
 }

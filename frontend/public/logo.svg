@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Provenance Register Logo">
+  <defs>
+    <linearGradient id="brandGrad" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06B6D4"/>
+      <stop offset="0.5" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#131E2B"/>
+      <stop offset="1" stop-color="#090E17"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="42" height="42" rx="12" fill="url(#bgGrad)" stroke="url(#brandGrad)" stroke-width="1.75"/>
+  <path d="M24 10L36 17V31L24 38L12 31V17L24 10Z" stroke="url(#brandGrad)" stroke-width="1.75" stroke-linejoin="round"/>
+  <path d="M24 10V24M36 17L24 24M12 17L24 24" stroke="url(#brandGrad)" stroke-width="1.75" stroke-linejoin="round"/>
+  <circle cx="24" cy="24" r="3.5" fill="#10B981"/>
+  <circle cx="24" cy="10" r="1.75" fill="#06B6D4"/>
+  <circle cx="36" cy="17" r="1.75" fill="#3B82F6"/>
+  <circle cx="36" cy="31" r="1.75" fill="#10B981"/>
+  <circle cx="24" cy="38" r="1.75" fill="#06B6D4"/>
+  <circle cx="12" cy="31" r="1.75" fill="#3B82F6"/>
+  <circle cx="12" cy="17" r="1.75" fill="#10B981"/>
+</svg>
