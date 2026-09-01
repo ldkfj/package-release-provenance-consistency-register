@@ -8,14 +8,14 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
-- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
+- Exact reviewed source revision: `801c72969755a840244d56f597de355f44138e42`.
+- Exact reviewed source tree: `2f7c6915d5dc269b8317ec1bd9cdd97d88edfbc3`.
 - The external reviewer package additionally binds this document set to the
   exact package commit; the source revision/tree above are the literal
   contract/frontend content identity used for review.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
+- Contract source SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical research-approved Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115` (lineage; identity-renamed current file matches after reversing approved substitutions).
@@ -46,12 +46,14 @@ The selected account and intended role were recorded without sending a transacti
 - Runner archive checked: `E:\Genlayer-Tools\GenVM\v0.3.0-rc7`.
 - Runner archive SHA-256: `E218A1854214681560351051F76FE2B878545CF3409455EF372D57014A88CA67`.
 - Schema/lint result: `genvm-lint check contracts/package_release_provenance_consistency_register.py --json` passed; contract discovered with 8 methods, 4 views, 4 writes, and zero constructor parameters.
-- Local contract tests: `gltest -q -p no:cacheprovider` — `14 passed`.
+- Local contract tests: `gltest -q -p no:cacheprovider` — `15 passed`.
 - Static checks: `ruff check contracts tests` — pass.
 - Frontend tests/build: `npm test` — 22 passed across 4 files; `npm run build` — pass.
 - Studio source loading: exact repaired contract file was loaded and parity-checked in GenLayer Studio on 2026-09-01.
 - Superseded diagnostic deployment (not release evidence): address `0x11f6622863D71929c0bf30D6d984528f588486E5`, deployment transaction `0xe254a1c4129c2b99f67957bafc4b09d815d27d72ebbbc1d4cc998b019b2409f2`, and baseline `create_case` transaction `0x4a2975de652660689ef0a4b352e59236b723dbe34f9b57faf821f1ca365bc5a4` both finalized with successful consensus/execution. Authoritative `get_case`/`get_page` showed the stored `DRAFT` case, but `get_count` remained `0` instead of `1`; this deployment is rejected and will not be used by the frontend or release.
 - Live repair: the persisted `case_count` constructor initialization changed from plain `0` to typed `u8(0)`, with a regression asserting both `get_count=1` and the case-page readback after creation. Fresh PRE_DEPLOY approval and a new frozen deployment are required.
+- Second superseded diagnostic deployment (not release evidence): repaired-source address `0xB0886861d5b5e67dce4540ce6D3451e29Dc2A17f`, deployment transaction `0x3223ca0790de393405518f22aed50f1c093920b75cd20a5420841e962f2f1406`, and E5 `create_case` transaction `0x200fcbbb4df7489a80782bbcfcb7c8458cd31e15176c5747bdcce120b1e58746` finalized with consensus but leader `ERROR` because `ERR_DUPLICATE_PROVENANCE`. The bounded diagnosis found `release_url` was missing from the duplicate identity key; this deployment is also rejected and will not be used by the frontend or release.
+- Live repair 2: the duplicate identity key now includes the canonical `release_url`; a regression proves distinct release tags can coexist while the exact full provenance remains duplicate-rejected. Fresh PRE_DEPLOY approval and a new frozen deployment are required.
 - Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
 - Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
 - Claude frontend redesign: Codex reviewed and integrated the bounded redesign plus public-language and form-accessibility corrections. The repair revision adds final-state readback, consensus-result gating, balance preflight, registry identity validation, in-flight write locking, and regression coverage; frontend regression/build and contract/runtime verification were rerun at the exact package revision above.
@@ -69,7 +71,7 @@ Neither warning is suppressed.
 
 - Storage: `cases: TreeMap[str, ReleaseCase]` is keyed by `case_id`;
   `duplicate_keys: TreeMap[str, str]` is keyed by
-  `ecosystem|package_name|version|repository_owner/repository_name|expected_commit_id`;
+  `ecosystem|package_name|version|repository_owner/repository_name|release_url|expected_commit_id`;
   `case_count: u8` is bounded by `MAX_CASES=128`. `ReleaseCase` stores
   `owner: Address`, the string fields `ecosystem`, `package_name`,
   `version`, `registry_url`, `repository_owner`, `repository_name`,

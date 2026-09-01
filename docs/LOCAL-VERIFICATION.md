@@ -6,13 +6,13 @@ This is local build evidence only. It is not a PRE_DEPLOY approval, deployment r
 
 ## Exact identity
 
-- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
-- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
+- Exact reviewed source revision: `801c72969755a840244d56f597de355f44138e42`.
+- Exact reviewed source tree: `2f7c6915d5dc269b8317ec1bd9cdd97d88edfbc3`.
 - The external reviewer package binds the verification record to the exact
   package commit; these literal values identify the reviewed source content.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
+- Contract source SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical approval-bound Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.
@@ -43,7 +43,7 @@ ruff check contracts tests
 All checks passed!
 
 PYTHONIOENCODING=utf-8 gltest -q -p no:cacheprovider
-14 passed in 0.21s
+15 passed in 0.15s
 ```
 
 From `frontend`:

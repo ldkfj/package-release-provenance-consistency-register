@@ -10,13 +10,13 @@ approval of this exact E2E plan.
 
 ## Exact package and network
 
-- Exact reviewed source revision: `d22ac86a364b8e2408c8107f3dba496a00681232`.
-- Exact reviewed source tree: `c89789d3704bad84f920408c5b7c7f3dca586978`.
+- Exact reviewed source revision: `801c72969755a840244d56f597de355f44138e42`.
+- Exact reviewed source tree: `2f7c6915d5dc269b8317ec1bd9cdd97d88edfbc3`.
 - The external reviewer package binds the complete plan to the exact package
   commit before Studio execution.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `CCDF9B42504DC8793EED363E3E309BB1825328CA4B7240B7CAB49FF48CE26107`.
+- Contract source SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
 - Network: Studionet; chain ID `61999`; RPC `https://studio.genlayer.com/api`.
 - Studio deployer/owner account: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
 - Unauthorized caller account: `0xeF5D2119416A2f5afa35dCFA209766EFC1BE5902`.
@@ -31,6 +31,12 @@ The prior diagnostic deployment is superseded and excluded: its finalized
 `create_case` stored the case but its finalized `get_count` readback remained
 zero. The repaired source uses typed scalar initialization and must receive a
 fresh PRE_DEPLOY approval before live execution.
+
+The next diagnostic deployment also remains excluded: E5 finalized with
+`ERR_DUPLICATE_PROVENANCE` because the prior duplicate identity omitted
+`release_url`. The repaired source includes that identity dimension; all E1–E4
+evidence from the prior diagnostic deployment is invalidated by this source
+change and must be rerun.
 
 ## Live fixture policy
 
