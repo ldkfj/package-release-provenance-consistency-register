@@ -10,8 +10,10 @@ approval of this exact E2E plan.
 
 ## Exact package and network
 
-- Exact package revision/tree: recorded in the reviewer package header and
-  revalidated against the clean checkout before each review.
+- Exact reviewed source revision: `2f717667ae41f924a46547b549c302f0d382d784`.
+- Exact reviewed source tree: `785a3d157c30d33fc6918653d8e5bf43cfe37499`.
+- The external reviewer package binds the complete plan to the exact package
+  commit before Studio execution.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.

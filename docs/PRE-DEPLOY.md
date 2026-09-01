@@ -8,8 +8,11 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact package revision/tree: recorded in the reviewer package header and
-  revalidated against the clean checkout before each review.
+- Exact reviewed source revision: `2f717667ae41f924a46547b549c302f0d382d784`.
+- Exact reviewed source tree: `785a3d157c30d33fc6918653d8e5bf43cfe37499`.
+- The external reviewer package additionally binds this document set to the
+  exact package commit; the source revision/tree above are the literal
+  contract/frontend content identity used for review.
 - Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
@@ -51,7 +54,12 @@ The selected account and intended role were recorded without sending a transacti
 - Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
 - Claude frontend redesign: Codex reviewed and integrated the bounded redesign plus public-language and form-accessibility corrections. The repair revision adds final-state readback, consensus-result gating, balance preflight, registry identity validation, in-flight write locking, and regression coverage; frontend regression/build and contract/runtime verification were rerun at the exact package revision above.
 
-Known version-sensitive warning: the linter reports a newer runner is available. The pinned compatible runner and archive digest are retained; the warning is documented, not suppressed.
+Known warnings and deviations: the linter reports a newer runner is available;
+the pinned compatible runner and archive digest are retained. gltest also
+reports that gltest.config.yaml is absent and therefore uses its default
+localnet configuration; this is an offline direct-harness limitation, not
+Studionet evidence, and the production gate remains Studio lifecycle proof.
+Neither warning is suppressed.
 
 ## Trust and state inventory
 
@@ -105,6 +113,10 @@ Known version-sensitive warning: the linter reports a newer runner is available.
 - Nondeterministic boundary: leader and validator independently retrieve bounded npm/GitHub structured evidence and compare the canonical projection; transport/malformed/ambiguous evidence resolves to `UNRESOLVED`.
 - No raw upstream response or unconstrained prose is persisted.
 - No payment, value transfer, linked contract, upgrade path or backend verdict exists.
+- The disagreement regression injects the runtime rejection boundary in the
+  direct harness and verifies no terminal success; production GenVM transaction
+  rollback is the authoritative state-safety control for an uncaught consensus
+  disagreement, so the case cannot be accepted from that transaction.
 - Write preflight requires the selected account to remain active on Studionet
   and requires at least 0.001 GEN (`1000000000000000` wei) spendable balance
   before consequential writes. Transaction polling keeps the same write
