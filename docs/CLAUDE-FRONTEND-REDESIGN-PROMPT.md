@@ -21,6 +21,13 @@ Redesign the app as a polished public product for end users and GenLayer judges:
 - Keep copy concise and user-facing. Never display EIP-6963, provider objects, RPC URLs, chain IDs, wallet routing, implementation details, debug text, test state, tool names, internal reviewer notes, AI/developer instructions, or raw error internals anywhere in UI, modal, tooltip, alert, screenshot, or logo. Translate technical failures into professional user guidance.
 - Do not expose secrets or private wallet material. Wallet selection must remain explicit and disconnected on reload.
 
+Wallet picker requirements are mandatory:
+- Clicking `Connect wallet` opens a clear picker/sheet like the supplied visual reference: each available option is its own row with recognizable icon, exact wallet name, short user-facing description, and a selection affordance; include MetaMask, OKX Wallet, and Rabby only when available.
+- Choosing a wallet is the only event allowed to start connection. Opening the picker, having one option, canceling, pressing Escape, clicking the backdrop, or reloading must issue zero account requests.
+- Preserve the current explicit-provider behavior and states: no wallet available, cancel, rejected connection, disconnect, account change, network change, switching wallet, and reconnect after reload.
+- Keep connection errors inside the open picker as an accessible alert. Keep the background inert while the picker is open, focus the picker initially, trap Tab/Shift+Tab, close on Escape, and restore focus to the initiating button.
+- Do not repeat the three wallet names in helper text, footer, status text, tooltip, or banner outside their individual picker options.
+
 Before editing, inspect the existing frontend files and understand their current behavior. Then implement the redesign directly in the allowed frontend files. Do not redesign the contract or invent unsupported functionality. Keep the existing public data fields and contract workflow intact.
 
 At the end, report only:
