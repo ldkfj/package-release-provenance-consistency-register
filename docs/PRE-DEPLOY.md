@@ -8,8 +8,8 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact Git commit: `44e7ff40e081c82593a31d62b2def3ec6510911f`.
-- Exact Git tree: `c1e78bb437fc6b6804f2b02cb1bd9c20347b2d7d`.
+- Exact Git commit containing this pre-deploy package: `0fe227cd496b7cf2446a7a85e4fa40dd65633e09`.
+- Exact Git tree: `3038c951d2ab8d01321b5ed5e3940c6a326f098c`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `628FD6922D9F41BE4254BB5AA25D83671521179622F8236555240BC5212D3106`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
