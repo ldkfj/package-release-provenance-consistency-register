@@ -346,7 +346,7 @@ class PackageReleaseProvenanceConsistencyRegister(gl.Contract):
         if not _is_lower_hex_commit(expected_commit_id):
             _fail("ERR_INVALID_COMMIT")
         normalized_subdirectory = _normalize_subdirectory(source_subdirectory)
-        duplicate_key = ecosystem + "|" + package_name + "|" + version + "|" + frozen_repository + "|" + expected_commit_id
+        duplicate_key = ecosystem + "|" + package_name + "|" + version + "|" + frozen_repository + "|" + release_url + "|" + expected_commit_id
         if duplicate_key in self.duplicate_keys:
             _fail("ERR_DUPLICATE_PROVENANCE")
         self.cases[case_id] = gl.storage.inmem_allocate(

@@ -164,6 +164,19 @@ def test_nonmatching_release_tag_is_assessed(monkeypatch):
     assert result["outcome"] == OUTCOME_VERSION_TAG_MISMATCH
 
 
+def test_release_tag_is_part_of_duplicate_identity():
+    contract = new_contract()
+    set_sender(OWNER)
+    contract.create_case(*create_args())
+    contract.create_case(
+        *create_args(
+            case_id="case-tag",
+            release_url="https://github.com/acme/tool/releases/tag/9.9.9",
+        )
+    )
+    assert contract.get_count() == 2
+
+
 @pytest.mark.parametrize(
     ("fixture", "outcome"),
     [
