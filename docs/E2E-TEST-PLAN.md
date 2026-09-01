@@ -35,6 +35,17 @@ The valid baseline fixture is `is-number@7.0.0`:
 - expected commit: `98e8ff1da1a89f93d1397a24d7413ed15421c139`
 - source subdirectory: empty string
 
+The `SOURCE_LINK_MISSING` fixture is `test-package@0.0.1`, verified by a
+bounded read on 2026-09-01:
+
+- registry URL: `https://registry.npmjs.org/test-package/0.0.1`
+- authoritative response: HTTP 200, `name=test-package`, `version=0.0.1`,
+  no `repository` field
+- frozen repository/release inputs: `acme/tool` and
+  `https://github.com/acme/tool/releases/tag/0.0.1`
+- expected commit: `0000000000000000000000000000000000000000`
+- source subdirectory: empty string
+
 Before any write, the primary AI rechecks each fixture with bounded
 authoritative reads and records the response date/status. If a fixture is no
 longer authoritative or returns an unexpected shape, that row is not retried
@@ -52,16 +63,15 @@ and re-reviewed before proceeding.
 | E5 | owner | Fresh valid case with release URL tag `9.9.9`; freeze and assess | `VERSION_TAG_MISMATCH`; retain transaction/finality/readback evidence |
 | E6 | owner | Fresh case whose frozen repository is `other/tool` while registry fixture remains `is-number@7.0.0`; freeze and assess | `REPOSITORY_MISMATCH` |
 | E7 | owner | Fresh case with valid repository/tag but expected commit `0000000000000000000000000000000000000000`; freeze and assess | `COMMIT_MISMATCH` |
-| E8 | owner | Fresh case using an authoritative package/version whose registry metadata has no usable repository link; freeze and assess | `SOURCE_LINK_MISSING`; fixture URL and bounded response are recorded before use |
+| E8 | owner | Fresh `test-package@0.0.1` case with the exact inputs above; freeze and assess | `SOURCE_LINK_MISSING`; authoritative HTTP 200 response has no `repository` field |
 | E9 | owner | Fresh case with a deliberately unavailable/nonexistent registry version; freeze and assess | `UNRESOLVED`; one `retry_unresolved`, then reassess; final bounded retry rejection is recorded |
 | E10 | owner | Repeat the exact provenance tuple from E1 under a new case ID | finalized expected duplicate rejection; count and existing case readback unchanged |
 | E11 | owner | Invalid URL/commit/subdirectory controls | finalized expected rejection; count and all prior state unchanged |
 
-E8 is the only fixture-dependent row: it may use a newly discovered
-authoritative npm package with absent/malformed repository metadata, but the
-exact URL and response must be recorded in the evidence ledger and included
-in the anonymous re-review delta before the transaction is sent. A failed
-fixture lookup is not converted into a different outcome by assertion.
+All fixtures are now concrete. The primary AI still rechecks each exact URL
+and response immediately before any write and records the response date/status;
+an unexpected shape is a plan delta requiring re-review, not an assertion to
+force the advertised outcome.
 
 ## Transaction and RPC controls
 
