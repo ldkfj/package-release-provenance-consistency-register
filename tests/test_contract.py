@@ -109,6 +109,8 @@ def test_create_freeze_and_match_projection(monkeypatch):
     contract = new_contract()
     set_sender(OWNER)
     contract.create_case(*create_args())
+    assert contract.get_count() == 1
+    assert json.loads(contract.get_page(0, 20))["items"][0]["case_id"] == "case-1"
     with pytest.raises(Exception, match="ERR_NOT_OWNER"):
         set_sender(OTHER)
         contract.freeze_case("case-1")

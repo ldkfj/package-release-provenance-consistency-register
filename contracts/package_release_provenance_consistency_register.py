@@ -311,7 +311,7 @@ class PackageReleaseProvenanceConsistencyRegister(gl.Contract):
     case_count: u8
 
     def __init__(self):
-        self.case_count = 0
+        self.case_count = u8(0)
 
     def _sender(self) -> Address:
         return gl.message.sender_address
