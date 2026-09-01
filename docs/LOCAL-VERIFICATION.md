@@ -2,7 +2,8 @@
 
 Recorded: 2026-09-01
 
-This is local build evidence only. It is not a PRE_DEPLOY approval, deployment receipt, live transaction record, or release approval.
+This section records local build evidence only. The exact deployment and live
+transaction matrix are recorded separately in `docs/VERIFICATION.md`.
 
 ## Exact identity
 
@@ -69,4 +70,8 @@ outstanding.
 
 ## Release boundary
 
-No Studio deployment, wallet signing, live transaction, GitHub push, Vercel deployment, user Vercel E2E, or anonymous review checkpoint has been performed in this local build turn. The exact contract source was loaded into Studio read-only on 2026-09-01.
+The exact contract source was deployed and exercised in Studio on 2026-09-01.
+Deployment address, transaction hashes, authoritative readbacks, and rejected
+attempts are recorded in `docs/VERIFICATION.md`; this local record does not
+replace that live evidence. GitHub push, Vercel deployment, user Vercel E2E,
+and final release approval remain pending.

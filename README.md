@@ -22,5 +22,8 @@ Copy `frontend/.env.example` to `frontend/.env.local` and set the deployed contr
 
 ## Current release boundary
 
-This repository is not deployed or release-approved. Studionet deployment, live transaction evidence, GitHub/Vercel target confirmation, user Vercel E2E, and the three independent review checkpoints are still required.
-
+The exact source revision has a completed Studionet deployment and bounded live
+E1–E11 evidence. Release approval is still pending the post-deployment review,
+Explorer pre-submission route, GitHub/Vercel target confirmation, and user-run
+Vercel E2E. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the
+reviewer-facing evidence ledger.

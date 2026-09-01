@@ -1,12 +1,12 @@
 # Studio E2E test plan — Package Release Provenance Consistency Register
 
-Status: `DRAFT_PENDING_ANONYMOUS_PLAN_APPROVAL`
+Status: `STUDIO_E2E_EXECUTED_PENDING_POST_DEPLOY_REVIEW`
 
-This is the minimum-sufficient live plan for the exact PRE_DEPLOY package. No
-signature, deployment transaction, or contract write is authorized by this
-document. The plan becomes executable only after anonymous `PRE_DEPLOY`
-approval, direct user confirmation of the frozen decision, and anonymous
-approval of this exact E2E plan.
+This is the minimum-sufficient live plan for the exact PRE_DEPLOY package. The
+required approvals and the direct frozen-decision confirmation were completed
+before execution. The resulting deployment and every live attempt are recorded
+in `docs/VERIFICATION.md`; this document now serves as the matrix definition
+and its exact-source binding.
 
 ## Exact package and network
 
@@ -25,18 +25,20 @@ approval of this exact E2E plan.
 - Frozen decision: the user explicitly confirmed in this Task on 2026-09-01 that
   the contract has no upgrade path and a post-deployment defect requires a new
   contract deployment.
-- Deployment address and transaction for this repaired exact source: `NOT YET CREATED`.
+- Deployment address: `0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
+- Deployment transaction: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
+- Exact live matrix and every attempted transaction: `docs/VERIFICATION.md`.
 
 The prior diagnostic deployment is superseded and excluded: its finalized
 `create_case` stored the case but its finalized `get_count` readback remained
-zero. The repaired source uses typed scalar initialization and must receive a
-fresh PRE_DEPLOY approval before live execution.
+zero. The deployed source is the typed-scalar repair bound to the exact source
+revision above.
 
 The next diagnostic deployment also remains excluded: E5 finalized with
 `ERR_DUPLICATE_PROVENANCE` because the prior duplicate identity omitted
 `release_url`. The repaired source includes that identity dimension; all E1–E4
-evidence from the prior diagnostic deployment is invalidated by this source
-change and must be rerun.
+evidence from that diagnostic deployment is excluded. The final deployment's
+E1–E4 rows are the current live evidence.
 
 ## Live fixture policy
 

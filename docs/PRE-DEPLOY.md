@@ -1,8 +1,10 @@
 # PRE_DEPLOY package — Studio preparation
 
-Status: `PENDING_ANONYMOUS_APPROVAL`
+Status: `DEPLOYED_EXACT_SOURCE_PENDING_POST_DEPLOY_REVIEW`
 
-This package is for the current exact local revision. It is not a deployment receipt and contains no signing or transaction authorization.
+This package records the exact source identity used for deployment. The live
+deployment receipt and complete transaction evidence are maintained in
+`docs/VERIFICATION.md`.
 
 ## Identity
 
@@ -34,10 +36,14 @@ This package is for the current exact local revision. It is not a deployment rec
 - Selected Studio deployer account: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
 - Selected account role: deployer and owner of cases created during the primary Studio journey; no upgrade authority is claimed.
 - Observed Studio balance at selection: `10.001 GEN`.
-- Contract address for this exact source: `NOT YET CREATED`.
-- Deployment transaction for this exact source: `NOT YET CREATED`.
+- Contract address for this exact source: `0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
+- Deployment transaction for this exact source: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
+- Complete live evidence: `docs/VERIFICATION.md`.
 
-The selected account and intended role were recorded without sending a transaction. If the account changes, identity/signing-dependent evidence must be revalidated before deployment.
+The selected account deployed and exercised the exact source. Any future source,
+constructor, linked-address, or material configuration change requires a new
+exact-source deployment and fresh matrix because the contract is intentionally
+frozen.
 
 ## Exact-source package
 
@@ -145,11 +151,11 @@ The following rows are the planned live proof matrix. Each row must receive actu
 
 Every attempted row, including failure, must be retained in the final secret-free evidence ledger. A transaction is not a pass from a button click, submission hash, `FINALIZED` alone, or UI label; it requires execution result, consensus/finality and authoritative readback.
 
-## Blocking items before Studio signing
+## Remaining release gates
 
-1. Anonymous `PRE_DEPLOY` verdict is not yet present. No signature, deployment transaction or contract write may be sent until the exact package receives the checkpoint approval required by governance.
-2. Anonymous approval of the exact detailed E2E plan is required before any Studio write transaction.
-3. The in-app browser is available for Studio operation; visual evidence and live transaction evidence remain outstanding by design.
+1. Post-deployment review must approve the exact deployment and `docs/VERIFICATION.md`.
+2. Explorer pre-submission review and same-package dual approval remain pending.
+3. GitHub/Vercel targets and user-run Vercel E2E remain pending; no release claim is made yet.
 
 ## Recovery boundary
 
