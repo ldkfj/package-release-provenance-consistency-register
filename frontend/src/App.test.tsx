@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "./App";
+import App, { canonicalRegistryUrl } from "./App";
 import * as rpc from "./rpc";
 import { resetProviderDiscoveryForTests } from "./providers";
 import type { Eip1193Provider } from "./types";
@@ -52,6 +52,11 @@ describe("public wallet picker", () => {
   afterEach(() => {
     roots.splice(0).forEach((root) => act(() => root.unmount()));
     document.body.replaceChildren();
+  });
+
+  it("canonicalizes scoped npm registry URLs", () => {
+    expect(canonicalRegistryUrl("@scope/package", "1.2.3")).toBe("https://registry.npmjs.org/@scope%2fpackage/1.2.3");
+    expect(canonicalRegistryUrl("package", "1.2.3")).toBe("https://registry.npmjs.org/package/1.2.3");
   });
 
   it("opens without requesting accounts and lists each available wallet", async () => {

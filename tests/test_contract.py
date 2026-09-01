@@ -15,6 +15,7 @@ from package_release_provenance_consistency_register import (
     OUTCOME_SOURCE_LINK_MISSING,
     OUTCOME_UNRESOLVED,
     OUTCOME_VERSION_TAG_MISMATCH,
+    STATE_ASSESSING,
     STATE_DRAFT,
     STATE_FROZEN,
     STATE_RESOLVED,
@@ -214,13 +215,17 @@ def test_validator_disagreement_is_detected(monkeypatch):
         projection = json.loads(leader)
         projection["commit_id"] = OTHER_COMMIT
         conflicting = json.dumps(projection, sort_keys=True, separators=(",", ":"))
-        assert validator_fn(gl.vm.Return(conflicting)) is False
+        if validator_fn(gl.vm.Return(conflicting)) is False:
+            raise RuntimeError("ERR_VALIDATOR_DISAGREEMENT")
         return leader
 
     monkeypatch.setattr(gl.vm, "run_nondet_unsafe", run)
     web_fixture(monkeypatch)
-    contract.assess_case("case-1")
-    assert json.loads(contract.get_result("case-1"))["outcome"] == OUTCOME_PROVENANCE_MATCH
+    with pytest.raises(Exception, match="ERR_VALIDATOR_DISAGREEMENT"):
+        contract.assess_case("case-1")
+    result = json.loads(contract.get_result("case-1"))
+    assert result["outcome"] != OUTCOME_PROVENANCE_MATCH
+    assert result["state"] == STATE_ASSESSING
 
 
 def test_production_shaped_views_are_json_serializable():

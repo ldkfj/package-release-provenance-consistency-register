@@ -16,6 +16,7 @@ export const STUDIONET_CHAIN = {
   rpcUrls: [...studionet.rpcUrls.default.http],
   blockExplorerUrls: [EXPLORER_URL],
 };
+export const MIN_SPENDABLE_GEN_WEI = 1_000_000_000_000_000n;
 
 const readClient = createClient({ chain: studionet });
 const inflight = new Map<string, Promise<unknown>>();
@@ -69,6 +70,7 @@ export function createWriteClient(provider: Eip1193Provider, account: `0x${strin
 }
 
 export async function sendWrite(provider: Eip1193Provider, account: `0x${string}`, functionName: string, args: unknown[]): Promise<`0x${string}`> {
+  await ensureSelectedAccountAndChain(provider, account);
   await ensureSufficientBalance(provider, account);
   const client = createWriteClient(provider, account);
   const hash = await client.writeContract({ address: ensureAddress(), functionName, args: args as CalldataEncodable[], value: 0n });
@@ -79,20 +81,41 @@ export async function sendWrite(provider: Eip1193Provider, account: `0x${string}
 export async function ensureSufficientBalance(provider: Eip1193Provider, account: `0x${string}`): Promise<void> {
   const value = await provider.request({ method: "eth_getBalance", params: [account, "latest"] });
   const text = typeof value === "string" ? value : "";
-  if (!/^0x[0-9a-fA-F]+$/.test(text) || BigInt(text) <= 0n) {
+  if (!/^0x[0-9a-fA-F]+$/.test(text) || BigInt(text) < MIN_SPENDABLE_GEN_WEI) {
     throw new Error("Wallet balance is insufficient for this action.");
+  }
+}
+
+export async function ensureSelectedAccountAndChain(provider: Eip1193Provider, account: `0x${string}`): Promise<void> {
+  const accounts = await provider.request({ method: "eth_accounts" });
+  if (!Array.isArray(accounts) || typeof accounts[0] !== "string" || accounts[0].toLowerCase() !== account.toLowerCase()) {
+    throw new Error("The selected wallet account is no longer active.");
+  }
+  const chainId = await provider.request({ method: "eth_chainId" });
+  if (String(chainId).toLowerCase() !== STUDIONET_CHAIN_ID.toLowerCase()) {
+    throw new Error("Wallet is not connected to Studionet.");
   }
 }
 
 export async function waitForSuccess(hash: `0x${string}`, onStatus: (status: string) => void): Promise<void> {
   const client = readClient;
+  let lastTransientError = false;
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    const tx = await client.getTransaction({ hash: hash as Hash });
+    let tx;
+    try {
+      tx = await client.getTransaction({ hash: hash as Hash });
+      lastTransientError = false;
+    } catch {
+      lastTransientError = true;
+      onStatus("Checking transaction status…");
+      await new Promise((resolve) => window.setTimeout(resolve, Math.min(3000, 250 * 2 ** Math.min(attempt, 3))));
+      continue;
+    }
     const decision = classifyTransaction(tx);
     onStatus(decision.status);
     if (decision.kind === "success") return;
     if (decision.kind === "failure") throw new Error(`Transaction ended as ${decision.status}: ${decision.reason}.`);
     await new Promise((resolve) => window.setTimeout(resolve, Math.min(3000, 250 * 2 ** Math.min(attempt, 3))));
   }
-  throw new Error("Transaction did not reach finality within the bounded wait.");
+  throw new Error(lastTransientError ? "Transaction status could not be confirmed within the bounded wait." : "Transaction did not reach finality within the bounded wait.");
 }

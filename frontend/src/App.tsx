@@ -21,6 +21,11 @@ const providerDescriptions: Record<string, string> = {
   Rabby: "Secure browser wallet",
 };
 
+export function canonicalRegistryUrl(packageName: string, version: string): string {
+  const encodedPackage = packageName.startsWith("@") ? packageName.replace("/", "%2f") : packageName;
+  return `https://registry.npmjs.org/${encodedPackage}/${version}`;
+}
+
 function formatAccount(address: string | null): string {
   if (!address) return "";
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -185,7 +190,7 @@ export default function App() {
     try {
       const tx = await sendWrite(selected.provider, account, "create_case", [
         form.caseId, "npm", form.packageName, form.version,
-        `https://registry.npmjs.org/${form.packageName}/${form.version}`,
+        canonicalRegistryUrl(form.packageName, form.version),
         form.repositoryOwner, form.repositoryName,
         `https://github.com/${form.repositoryOwner.toLowerCase()}/${form.repositoryName.toLowerCase()}/releases/tag/${form.version}`,
         form.expectedCommit.toLowerCase(), form.sourceSubdirectory,

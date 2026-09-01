@@ -6,10 +6,11 @@ This is local build evidence only. It is not a PRE_DEPLOY approval, deployment r
 
 ## Exact identity
 
-- Git commit containing the implementation: `2b176faa812e3977f9563933daa5d903c8e42527`.
-- Git tree for the implementation commit: `7c639b0ed08dad060571b99f3c8028464078d42d`.
+- Exact package revision/tree: recorded in the reviewer package header and
+  revalidated against the clean checkout before each review.
+- Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
-- Contract source SHA-256: `BD996101A1900972F78607C5E116E1D159231127644E8DBFE1A209CB0C62FDE8`.
+- Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
 - Current Stage 2 SHA-256: `020FAA53EFB62EFF1D8A525C9B0CB928E258E468A79DA5CD3A721D630504EC52`.
 - Historical approval-bound Stage 1 SHA-256: `74F726D417B7079A3B53DE64FA53E96353DB563800DBF685A7981C76194CC115`.
@@ -40,18 +41,18 @@ ruff check contracts tests
 All checks passed!
 
 PYTHONIOENCODING=utf-8 gltest -q -p no:cacheprovider
-11 passed in 0.12s
+14 passed in 0.21s
 ```
 
 From `frontend`:
 
 ```text
 npm test
-Test Files  3 passed (3)
-Tests       15 passed (15)
+Test Files  4 passed (4)
+Tests       22 passed (22)
 
 npm run build
-465 modules transformed.
+466 modules transformed.
 built successfully
 ```
 

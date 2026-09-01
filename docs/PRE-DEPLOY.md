@@ -8,9 +8,9 @@ This package is for the current exact local revision. It is not a deployment rec
 
 - Category: `PROJECT` (non-economic).
 - Project: `Package Release Provenance Consistency Register`.
-- Exact final Git revision for this package: `588a61f6920aaa2290bb39ce7ed3c9d3309168eb`.
-- Exact final Git tree: `603c90697b70c24496ad3c8fc3ba8424a7a7d0f7`.
-- Implementation ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
+- Exact package revision/tree: recorded in the reviewer package header and
+  revalidated against the clean checkout before each review.
+- Implementation lineage ancestor: `2b176faa812e3977f9563933daa5d903c8e42527`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract source SHA-256: `363D52C5EFD5FB44E29689F7935E0A04AB543E297566F66A4BCF10CB8A66BD56`.
 - Current Stage 1 SHA-256: `E363CABF50950C6638F089A7E1FF7518F0B0F9B2410706E37D428A613E719ED7`.
@@ -45,7 +45,7 @@ The selected account and intended role were recorded without sending a transacti
 - Schema/lint result: `genvm-lint check contracts/package_release_provenance_consistency_register.py --json` passed; contract discovered with 8 methods, 4 views, 4 writes, and zero constructor parameters.
 - Local contract tests: `gltest -q -p no:cacheprovider` — `14 passed`.
 - Static checks: `ruff check contracts tests` — pass.
-- Frontend tests/build: `npm test` — 18 passed across 4 files; `npm run build` — pass.
+- Frontend tests/build: `npm test` — 22 passed across 4 files; `npm run build` — pass.
 - Studio source loading: exact contract file loaded into GenLayer Studio on 2026-09-01; no deployment or write transaction sent.
 - Release-tag correction: create accepts a bounded canonical GitHub release-tag URL; assessment enforces the specified `version`/`v+version` match and exposes `VERSION_TAG_MISMATCH`. This preserves the advertised outcome path without changing the public API.
 - Wallet picker verification: the functional picker shows only available supported wallets, makes zero account requests on open/cancel/Escape/reload, requests only the explicitly selected provider, keeps rejection inline, and invalidates on disconnect/account/network change. Browser inspection confirmed the public no-provider state; live injected-wallet option rendering remains pending Studio/Vercel evidence.
@@ -105,6 +105,10 @@ Known version-sensitive warning: the linter reports a newer runner is available.
 - Nondeterministic boundary: leader and validator independently retrieve bounded npm/GitHub structured evidence and compare the canonical projection; transport/malformed/ambiguous evidence resolves to `UNRESOLVED`.
 - No raw upstream response or unconstrained prose is persisted.
 - No payment, value transfer, linked contract, upgrade path or backend verdict exists.
+- Write preflight requires the selected account to remain active on Studionet
+  and requires at least 0.001 GEN (`1000000000000000` wei) spendable balance
+  before consequential writes. Transaction polling keeps the same write
+  reconciled through transient status failures with bounded retry/backoff.
 
 ## Smallest sufficient Studio matrix
 
