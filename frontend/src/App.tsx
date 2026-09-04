@@ -15,12 +15,6 @@ const emptyForm = {
   sourceSubdirectory: "",
 };
 
-const providerDescriptions: Record<string, string> = {
-  MetaMask: "Browser wallet",
-  "OKX Wallet": "Web3 wallet",
-  Rabby: "Secure browser wallet",
-};
-
 export function canonicalRegistryUrl(packageName: string, version: string): string {
   const encodedPackage = packageName.startsWith("@") ? packageName.replace("/", "%2f") : packageName;
   return `https://registry.npmjs.org/${encodedPackage}/${version}`;
@@ -223,31 +217,58 @@ export default function App() {
         <img src="/logo.svg" alt="" width="38" height="38" className="brand-logo" />
         <div className="brand-copy">
           <div className="brand-eyebrow-row">
-            <span className="eyebrow">GENLAYER · STUDIONET</span>
+            <span className="eyebrow">GenLayer Studionet</span>
             <span className="network-pill"><span className="pulse-dot"></span>Studionet Live</span>
           </div>
           <h1>Provenance Register</h1>
         </div>
       </div>
       <div className="topbar-actions">
-        {account && <span className="account-chip" title={account}><span className="account-dot"></span>{formatAccount(account)}</span>}
-        <button ref={connectButtonRef} className="wallet" type="button" onClick={openPicker}>{connectedLabel}</button>
+        {account && (
+          <span className="account-chip" title={account}>
+            <span className="account-dot"></span>
+            <span className="account-address">{formatAccount(account)}</span>
+          </span>
+        )}
+        <button ref={connectButtonRef} className="wallet" type="button" onClick={openPicker}>
+          {connectedLabel}
+        </button>
       </div>
     </header>
 
     <section className="hero">
       <div className="hero-content">
         <div className="hero-badge">
-          <span className="badge-icon">🛡️</span>
-          <p className="eyebrow">Release integrity, made inspectable</p>
+          <span className="badge-bullet" aria-hidden="true"></span>
+          <p className="eyebrow">Release Integrity Verification</p>
         </div>
         <h2>Bind a package version to the source release it claims.</h2>
-        <p className="lede">A consensus-verified register for registry metadata, GitHub tags, immutable commits, and source subdirectories.</p>
+        <p className="lede">
+          An immutable consensus register connecting package registry releases to verified GitHub tags, source commits, and subdirectories on GenLayer Studionet.
+        </p>
+
+        <div className="workflow-steps" aria-label="Provenance lifecycle stages">
+          <div className="step-item">
+            <span className="step-name">Register draft</span>
+            <span className="step-desc">Declare registry target and commit</span>
+          </div>
+          <div className="step-separator" aria-hidden="true">→</div>
+          <div className="step-item">
+            <span className="step-name">Freeze inputs</span>
+            <span className="step-desc">Lock inputs on-chain for verification</span>
+          </div>
+          <div className="step-separator" aria-hidden="true">→</div>
+          <div className="step-item">
+            <span className="step-name">Assess consistency</span>
+            <span className="step-desc">Validators confirm consistency</span>
+          </div>
+        </div>
       </div>
+
       <div className="stat">
-        <span className="stat-label">Registered cases</span>
-        <strong className="stat-value">{count ?? "—"}</strong>
-        <span className="stat-meta">Studionet Consensus</span>
+        <span className="stat-label">Registered Cases</span>
+        <strong className="stat-value">{count !== null ? count : 0}</strong>
+        <span className="stat-meta">Verified on Studionet</span>
       </div>
     </section>
 
@@ -255,14 +276,14 @@ export default function App() {
       <div className="panel">
         <div className="panel-head">
           <div>
-            <span className="eyebrow">01 · REGISTER</span>
-            <h3>Freeze provenance inputs</h3>
-            <p className="panel-subtitle">Create a verifiable draft case binding an npm release to its source repository.</p>
+            <span className="eyebrow">Package Registration</span>
+            <h3>Register provenance target</h3>
+            <p className="panel-subtitle">Create a verifiable draft case binding an npm release to its source repository and commit.</p>
           </div>
           <span className="status-dot">{status}</span>
         </div>
         <form onSubmit={submit} className="form-grid">
-          <div className="form-section-title">Case &amp; Package Identification</div>
+          <div className="form-section-title">Package Details</div>
           <label className="field-group">
             <span className="field-label">Case ID</span>
             <input name="caseId" autoComplete="off" required value={form.caseId} onChange={(event) => setForm({ ...form, caseId: event.target.value })} placeholder="e.g. pr-pkg-001" />
@@ -276,7 +297,7 @@ export default function App() {
             <input name="version" autoComplete="off" required value={form.version} onChange={(event) => setForm({ ...form, version: event.target.value })} placeholder="e.g. 4.17.21" />
           </label>
 
-          <div className="form-section-title">Source Repository Specification</div>
+          <div className="form-section-title">Source Repository</div>
           <label className="field-group">
             <span className="field-label">Repository Owner</span>
             <input name="repositoryOwner" autoComplete="off" required value={form.repositoryOwner} onChange={(event) => setForm({ ...form, repositoryOwner: event.target.value })} placeholder="e.g. lodash" />
@@ -287,12 +308,12 @@ export default function App() {
           </label>
           <label className="field-group">
             <span className="field-label">Source Subdirectory</span>
-            <input name="sourceSubdirectory" autoComplete="off" value={form.sourceSubdirectory} onChange={(event) => setForm({ ...form, sourceSubdirectory: event.target.value })} placeholder="e.g. packages/core or leave blank for root" />
+            <input name="sourceSubdirectory" autoComplete="off" value={form.sourceSubdirectory} onChange={(event) => setForm({ ...form, sourceSubdirectory: event.target.value })} placeholder="e.g. packages/core (optional)" />
           </label>
 
-          <div className="form-section-title">Cryptographic Provenance Target</div>
+          <div className="form-section-title">Cryptographic Commit Target</div>
           <label className="field-group field-full">
-            <span className="field-label">Expected Full Commit (40 hex chars)</span>
+            <span className="field-label">Expected Full Commit (40 hex characters)</span>
             <input name="expectedCommit" autoComplete="off" spellCheck={false} required value={form.expectedCommit} onChange={(event) => setForm({ ...form, expectedCommit: event.target.value })} placeholder="40 lowercase hex characters" className="mono-input" />
           </label>
 
@@ -306,9 +327,9 @@ export default function App() {
       <div className="panel detail">
         <div className="panel-head">
           <div>
-            <span className="eyebrow">02 · INSPECT</span>
-            <h3>Case detail</h3>
-            <p className="panel-subtitle">Retrieve on-chain case state, execute consensus validation, and verify provenance.</p>
+            <span className="eyebrow">Verification &amp; Audit</span>
+            <h3>Case inspection</h3>
+            <p className="panel-subtitle">Retrieve on-chain state, review consensus validation, and trigger lifecycle transitions.</p>
           </div>
           <span className={`state state-${result?.state?.toLowerCase() ?? "empty"}`}>{result?.state ?? "NO CASE LOADED"}</span>
         </div>
@@ -325,7 +346,7 @@ export default function App() {
                 <span className="outcome-tag">Consensus Result</span>
                 <span className="outcome-state-badge">{result.state}</span>
               </div>
-              <div className="outcome-text">{result.outcome || "Awaiting assessment"}</div>
+              <div className="outcome-text">{result.outcome || "Awaiting consensus assessment"}</div>
             </div>
 
             <dl className="spec-list">
@@ -343,7 +364,7 @@ export default function App() {
               </div>
               <div className="spec-item">
                 <dt>Observed commit</dt>
-                <dd className="mono spec-val">{result.observed_commit_id || "—"}</dd>
+                <dd className="mono spec-val">{result.observed_commit_id || "Pending assessment"}</dd>
               </div>
               {result.source_subdirectory && (
                 <div className="spec-item">
@@ -370,8 +391,7 @@ export default function App() {
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">📂</div>
-            <p className="empty">Load a frozen case to inspect its independently derived result.</p>
+            <p className="empty">Load a case by ID to inspect its independently verified provenance outcome.</p>
           </div>
         )}
       </div>
@@ -379,9 +399,9 @@ export default function App() {
 
     {error && (
       <div className="alert" role="alert">
-        <span className="alert-icon">⚠️</span>
         <div className="alert-body">
-          <strong>Notice:</strong> {error}
+          <span className="alert-badge">Notice</span>
+          <span className="alert-text">{error}</span>
         </div>
       </div>
     )}
@@ -394,7 +414,7 @@ export default function App() {
         </div>
         <a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer" className="receipt-link">
           <span className="receipt-hash">{hash}</span>
-          <span className="receipt-arrow">↗</span>
+          <span className="receipt-arrow" aria-hidden="true">↗</span>
         </a>
       </div>
     )}
@@ -405,9 +425,8 @@ export default function App() {
       <section ref={dialogRef} className="chooser" role="dialog" aria-modal="true" aria-labelledby="chooser-title" tabIndex={-1} onKeyDown={handlePickerKeyDown}>
         <button className="close" type="button" aria-label="Close wallet chooser" onClick={closePicker}>×</button>
         <div className="chooser-header">
-          <span className="eyebrow">SECURE CONNECTION</span>
           <h3 id="chooser-title">Choose a wallet</h3>
-          <p className="chooser-desc">Select a wallet to interact with the provenance register on Studionet.</p>
+          <p className="chooser-desc">Select a supported wallet to connect to Studionet.</p>
         </div>
 
         {connectionError && <p className="chooser-error" role="alert" aria-live="assertive">{connectionError}</p>}
@@ -424,16 +443,13 @@ export default function App() {
                 onClick={() => connect(provider)}
               >
                 <img src={provider.icon} alt="" width="36" height="36" className="provider-icon" />
-                <span className="provider-copy">
-                  <strong>{provider.name}</strong>
-                  <small>{providerDescriptions[provider.name]}</small>
-                </span>
-                <span className="provider-arrow" aria-hidden="true">→</span>
+                <span className="provider-name">{provider.name}</span>
+                <span className="provider-arrow" aria-hidden="true">›</span>
               </button>
             ))}
           </div>
         ) : (
-          <p className="empty">No compatible wallet was found. Install a supported wallet and try again.</p>
+          <p className="empty">No supported wallet was detected. Install a supported wallet and try again.</p>
         )}
 
         <button className="picker-cancel" type="button" onClick={closePicker}>Cancel</button>
