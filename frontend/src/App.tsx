@@ -25,6 +25,18 @@ function formatAccount(address: string | null): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
+export function userFacingError(cause: unknown, fallback: string): string {
+  const raw = cause instanceof Error ? cause.message : "";
+  const code = cause && typeof cause === "object" && "code" in cause ? Number((cause as { code?: unknown }).code) : undefined;
+  if (/ERR_DUPLICATE_PROVENANCE|duplicate provenance|already registered/i.test(raw)) return "This package release is already registered. Use a different package version or load the existing case by ID.";
+  if (code === 4001 || /reject|denied|cancel/i.test(raw)) return "The wallet request was canceled. Choose a wallet to try again.";
+  if (/insufficient|balance/i.test(raw)) return "This wallet does not have enough balance for that action.";
+  if (/network|chain/i.test(raw)) return "Your wallet is on the wrong network. Reconnect and try again.";
+  if (/429|rate|busy|timeout|unavailable/i.test(raw)) return "The service is busy right now. Wait a moment and try again once.";
+  if (/ERR_|contract|RPC|transaction|readback|provider|request|hash/i.test(raw)) return fallback;
+  return fallback;
+}
+
 export default function App() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [selected, setSelected] = useState<ProviderInfo | null>(null);
@@ -107,17 +119,6 @@ export default function App() {
   }, []);
 
   const connectedLabel = useMemo(() => account ? "Wallet connected" : "Connect wallet", [account]);
-
-  function userFacingError(cause: unknown, fallback: string): string {
-    const raw = cause instanceof Error ? cause.message : "";
-    const code = cause && typeof cause === "object" && "code" in cause ? Number((cause as { code?: unknown }).code) : undefined;
-    if (code === 4001 || /reject|denied|cancel/i.test(raw)) return "The wallet request was canceled. Choose a wallet to try again.";
-    if (/insufficient|balance/i.test(raw)) return "This wallet does not have enough balance for that action.";
-    if (/network|chain/i.test(raw)) return "Your wallet is on the wrong network. Reconnect and try again.";
-    if (/429|rate|busy|timeout|unavailable/i.test(raw)) return "The service is busy right now. Wait a moment and try again once.";
-    if (/ERR_|contract|RPC|transaction|readback|provider|request|hash/i.test(raw)) return fallback;
-    return fallback;
-  }
 
   function openPicker() {
     restoreFocusRef.current = connectButtonRef.current;

@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App, { canonicalRegistryUrl } from "./App";
+import App, { canonicalRegistryUrl, userFacingError } from "./App";
 import * as rpc from "./rpc";
 import { resetProviderDiscoveryForTests } from "./providers";
 import type { Eip1193Provider } from "./types";
@@ -57,6 +57,10 @@ describe("public wallet picker", () => {
   it("canonicalizes scoped npm registry URLs", () => {
     expect(canonicalRegistryUrl("@scope/package", "1.2.3")).toBe("https://registry.npmjs.org/@scope%2fpackage/1.2.3");
     expect(canonicalRegistryUrl("package", "1.2.3")).toBe("https://registry.npmjs.org/package/1.2.3");
+  });
+
+  it("keeps duplicate provenance errors in the contract fault domain", () => {
+    expect(userFacingError(new Error("Transaction ended as FINALIZED: ERR_DUPLICATE_PROVENANCE."), "fallback")).toContain("already registered");
   });
 
   it("opens without requesting accounts and lists each available wallet", async () => {

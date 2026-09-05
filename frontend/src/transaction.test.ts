@@ -14,4 +14,20 @@ describe("GenLayer transaction classification", () => {
     expect(classifyTransaction({ statusName: "LEADER_TIMEOUT" }).kind).toBe("failure");
     expect(classifyTransaction({ statusName: "FINALIZED", result: 6, txExecutionResultName: "FINISHED_WITH_RETURN" }).kind).toBe("success");
   });
+
+  it("accepts the current raw Studionet leader success signal", () => {
+    expect(classifyTransaction({
+      statusName: "FINALIZED",
+      result: 6,
+      consensus_data: { leader_receipt: [{ execution_result: "SUCCESS" }] },
+    })).toEqual({ kind: "success", status: "FINALIZED" });
+  });
+
+  it("preserves an application rejection reason from the raw Studionet receipt", () => {
+    expect(classifyTransaction({
+      statusName: "FINALIZED",
+      result: 6,
+      consensus_data: { leader_receipt: [{ execution_result: "ERROR", result: { payload: "ERR_DUPLICATE_PROVENANCE" } }] },
+    })).toEqual({ kind: "failure", status: "FINALIZED", reason: "ERR_DUPLICATE_PROVENANCE" });
+  });
 });
