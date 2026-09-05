@@ -95,6 +95,7 @@ export default function App() {
   const [caseId, setCaseId] = useState("");
   const [result, setResult] = useState<ContractCase | null>(null);
   const [count, setCount] = useState<number | null>(null);
+  const [countUnavailable, setCountUnavailable] = useState(false);
   const [status, setStatus] = useState("Ready");
   const [transactionPhase, setTransactionPhase] = useState<WritePhase>(INITIAL_WRITE_PROGRESS.phase);
   const [error, setError] = useState("");
@@ -167,9 +168,22 @@ export default function App() {
   }, [chooserOpen, providers.length, connectionError]);
   useEffect(() => {
     let active = true;
-    getCount().then((value) => active && setCount(value)).catch(() => undefined);
+    getCount({ finalized: true })
+      .then((value) => { if (active) { setCount(value); setCountUnavailable(false); } })
+      .catch(() => { if (active) { setCount(null); setCountUnavailable(true); } });
     return () => { active = false; };
   }, []);
+
+  async function refreshFinalizedCount(): Promise<void> {
+    try {
+      const value = await getCount({ finalized: true });
+      setCount(value);
+      setCountUnavailable(false);
+    } catch {
+      setCount(null);
+      setCountUnavailable(true);
+    }
+  }
 
   const connectedLabel = useMemo(() => account ? "Wallet connected" : "Connect wallet", [account]);
 
@@ -261,7 +275,7 @@ export default function App() {
       await waitForSuccess(tx, (next) => { setTransactionPhase(transactionPhaseFromStatus(next)); setStatus(publicTransactionStatus(next)); });
       setTransactionPhase("VERIFYING_READBACK");
       const refreshed = await getCase(form.caseId, { finalized: true });
-      setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus("Created and verified");
+      setResult(refreshed); setCaseId(form.caseId); await refreshFinalizedCount(); setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus("Created and verified");
     } catch (cause) {
       const phase = failurePhase(cause, Boolean(submittedHash));
       setTransactionPhase(phase); setStatus(failureStatus(phase)); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again."));
@@ -285,6 +299,7 @@ export default function App() {
       await waitForSuccess(activeHash, (next) => { setTransactionPhase(transactionPhaseFromStatus(next)); setStatus(publicTransactionStatus(next)); });
       setTransactionPhase("VERIFYING_READBACK");
       setResult(await getCase(activeCaseId, { finalized: true }));
+      await refreshFinalizedCount();
       setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus("Verification complete");
     } catch (cause) {
       const phase = failurePhase(cause, true);
@@ -373,8 +388,8 @@ export default function App() {
 
       <div className="stat">
         <span className="stat-label">Registered Cases</span>
-        <strong className="stat-value">{count !== null ? count : 0}</strong>
-        <span className="stat-meta">Verified on Studionet</span>
+        <strong className="stat-value" aria-live="polite">{count !== null ? count : countUnavailable ? "Unavailable" : "Loading…"}</strong>
+        <span className="stat-meta">{count !== null ? "Verified on Studionet" : countUnavailable ? "Total temporarily unavailable" : "Loading verified total"}</span>
       </div>
     </section>
 

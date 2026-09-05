@@ -47,7 +47,7 @@ function readVariant(options?: ReadOptions): TransactionHashVariant {
   return options?.finalized ? TransactionHashVariant.LATEST_FINAL : TransactionHashVariant.LATEST_NONFINAL;
 }
 
-export async function getCount(options?: ReadOptions): Promise<number> {
+export async function getCount(options: ReadOptions = { finalized: true }): Promise<number> {
   const variant = readVariant(options);
   const value = await read(`count:${variant}`, () => readClient.readContract({ address: ensureAddress(), functionName: "get_count", args: [], transactionHashVariant: variant }));
   return Number(value);

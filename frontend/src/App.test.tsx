@@ -48,6 +48,7 @@ describe("public wallet picker", () => {
   beforeEach(() => {
     resetProviderDiscoveryForTests();
     delete (window as Window & { ethereum?: unknown }).ethereum;
+    vi.mocked(rpc.getCount).mockReset().mockResolvedValue(0);
   });
 
   afterEach(() => {
@@ -80,6 +81,30 @@ describe("public wallet picker", () => {
     expect(container.textContent).toContain("How it works");
     expect(container.textContent).toContain("authoritative state");
     expect(container.querySelector("[data-transaction-phase]")?.getAttribute("data-transaction-phase")).toBe("IDLE");
+  });
+
+  it("does not show a false zero while the finalized count is loading", async () => {
+    let resolveCount!: (value: number) => void;
+    vi.mocked(rpc.getCount).mockImplementationOnce(() => new Promise((resolve) => { resolveCount = resolve; }));
+    const { container, root } = await renderApp();
+    roots.push(root);
+
+    expect(container.querySelector(".stat-value")?.textContent).toBe("Loading…");
+    expect(container.querySelector(".stat-meta")?.textContent).toContain("Loading");
+    expect(rpc.getCount).toHaveBeenCalledWith({ finalized: true });
+
+    await act(async () => { resolveCount(10); await Promise.resolve(); });
+    expect(container.querySelector(".stat-value")?.textContent).toBe("10");
+    expect(container.querySelector(".stat-meta")?.textContent).toBe("Verified on Studionet");
+  });
+
+  it("surfaces a finalized count read failure instead of showing zero", async () => {
+    vi.mocked(rpc.getCount).mockRejectedValueOnce(new Error("read unavailable"));
+    const { container, root } = await renderApp();
+    roots.push(root);
+
+    expect(container.querySelector(".stat-value")?.textContent).toBe("Unavailable");
+    expect(container.querySelector(".stat-meta")?.textContent).toContain("temporarily unavailable");
   });
 
   it("opens without requesting accounts and lists each available wallet", async () => {

@@ -19,6 +19,7 @@ vi.mock("genlayer-js/chains", () => ({
 }));
 
 let getCase: (caseId: string, options?: { finalized?: boolean }) => Promise<unknown>;
+let getCount: (options?: { finalized?: boolean }) => Promise<number>;
 let ensureSufficientBalance: (provider: { request(args: { method: string; params?: unknown[] }): Promise<unknown> }, account: `0x${string}`) => Promise<void>;
 let ensureSelectedAccountAndChain: (provider: { request(args: { method: string; params?: unknown[] }): Promise<unknown> }, account: `0x${string}`) => Promise<void>;
 let waitForSuccess: (hash: `0x${string}`, onStatus: (status: string) => void) => Promise<void>;
@@ -26,7 +27,7 @@ let waitForSuccess: (hash: `0x${string}`, onStatus: (status: string) => void) =>
 describe("authoritative readback variants", () => {
   beforeAll(async () => {
     vi.stubEnv("VITE_CONTRACT_ADDRESS", `0x${"1".repeat(40)}`);
-    ({ getCase, ensureSufficientBalance, ensureSelectedAccountAndChain, waitForSuccess } = await import("./rpc"));
+    ({ getCase, getCount, ensureSufficientBalance, ensureSelectedAccountAndChain, waitForSuccess } = await import("./rpc"));
   });
   beforeEach(() => {
     readContract.mockClear();
@@ -38,6 +39,12 @@ describe("authoritative readback variants", () => {
     await getCase("case-1", { finalized: true });
     expect(readContract).toHaveBeenNthCalledWith(1, expect.objectContaining({ transactionHashVariant: "latest-nonfinal" }));
     expect(readContract).toHaveBeenNthCalledWith(2, expect.objectContaining({ transactionHashVariant: "latest-final" }));
+  });
+
+  it("uses latest-final for the public count by default", async () => {
+    readContract.mockResolvedValueOnce("10");
+    await expect(getCount()).resolves.toBe(10);
+    expect(readContract).toHaveBeenCalledWith(expect.objectContaining({ functionName: "get_count", transactionHashVariant: "latest-final" }));
   });
 
   it("requires a positive latest GEN balance before a write", async () => {
