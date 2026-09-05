@@ -22,7 +22,7 @@ claim Explorer submission or final release approval.
 - Deployment transaction: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
 - Deployment status: `FINALIZED`; consensus: `MAJORITY_AGREE`; leader execution: `SUCCESS`.
 - Explorer: `https://explorer-studio.genlayer.com/address/0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
-- Vercel production deployment: `https://vercel.com/gam9/package-release-provenance-consistency-register/GMfrmVk2eRkXZ2NzsT2qRVKmsPct`.
+- Vercel production deployment ID: `GMfrmVk2eRkXZ2NzsT2qRVKmsPct`.
 - Live application: `https://package-release-provenance-consiste.vercel.app/`.
 - Vercel build: remote `tsc -b && vite build` completed successfully for the deployed revision.
 

@@ -7,7 +7,7 @@ A non-economic GenLayer application that checks whether an npm release points to
 - [Open the live application](https://package-release-provenance-consiste.vercel.app/)
 - [Source repository](https://github.com/ldkfj/package-release-provenance-consistency-register)
 - [Studionet contract in Explorer](https://explorer-studio.genlayer.com/address/0x9BF50C40e34BA42E28120aAAa84148fD25040F73)
-- [Production deployment](https://vercel.com/gam9/package-release-provenance-consistency-register/GMfrmVk2eRkXZ2NzsT2qRVKmsPct)
+- Production deployment ID: `GMfrmVk2eRkXZ2NzsT2qRVKmsPct` (the public live application is linked above)
 - [Exact application revision](https://github.com/ldkfj/package-release-provenance-consistency-register/commit/6a37d93707db6e78346f0d551ebc852a702f6822)
 
 ## The trust problem
