@@ -22,8 +22,10 @@ Copy `frontend/.env.example` to `frontend/.env.local` and set the deployed contr
 
 ## Current release boundary
 
-The exact source revision has a completed Studionet deployment and bounded live
-E1–E11 evidence. Release approval is still pending the post-deployment review,
-Explorer pre-submission route, GitHub/Vercel target confirmation, and user-run
-Vercel E2E. See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the
-reviewer-facing evidence ledger.
+The exact source revision has a completed Studionet deployment, GitHub push,
+production Vercel deployment, and bounded live E1–E13 evidence. The production
+journey was verified with explicit wallet selection, transaction progress,
+finality, receipt retention, and authoritative readback. Explorer submission
+and final release approval remain pending their governed final review gates.
+See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the reviewer-facing
+evidence ledger.

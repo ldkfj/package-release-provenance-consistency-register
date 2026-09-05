@@ -1,18 +1,19 @@
 # Reviewer verification — Package Release Provenance Consistency Register
 
-Status: `STUDIO_E2E_EXECUTED_PENDING_POST_DEPLOY_REVIEW`
+Status: `EXACT_FINAL_REVISION_E2E_COMPLETE`
 
 This is the reviewer-facing live evidence ledger for the exact frozen source.
-It is written for a GenLayer judge who has no Task history. It does not claim
-GitHub, Vercel, Explorer submission, or final release approval.
+It is written for a GenLayer judge who has no Task history. It records the
+verified source, deployment, live proof, and final web journey. It does not
+claim Explorer submission or final release approval.
 
 ## Exact source and deployment
 
-- Source revision: `801c72969755a840244d56f597de355f44138e42`.
-- Source tree: `2f7c6915d5dc269b8317ec1bd9cdd97d88edfbc3`.
+- Application source revision: `f531d13c6d22525bd6beefcece53fe16e537c42b`.
+- Application source tree: `3c093f053f75709e19aca312799c58e8df63470f`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
-- Package/document revision before this ledger: `5454cc278391ea2cbeb52c4128d044f984141e28`.
+- Previous application revision: `2bc3e8a7b34b157f8075f936c06b0e6ad9dcac69`.
 - Network: Studionet (`61999`).
 - Contract classification: `INTENTIONALLY FROZEN`; there is no upgrade path.
 - Deployer/owner: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
@@ -21,6 +22,9 @@ GitHub, Vercel, Explorer submission, or final release approval.
 - Deployment transaction: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
 - Deployment status: `FINALIZED`; consensus: `MAJORITY_AGREE`; leader execution: `SUCCESS`.
 - Explorer: `https://explorer-studio.genlayer.com/address/0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
+- Vercel production deployment: `https://vercel.com/gam9/package-release-provenance-consistency-register/6jGnKpGpBBBz4XE9rDbgjUVxgoAM`.
+- Live application: `https://package-release-provenance-consiste.vercel.app/`.
+- Vercel build: remote `tsc -b && vite build` completed successfully for the deployed revision.
 
 The deployment above is the only release deployment. Earlier deployments at
 `0x11f6622863D71929c0bf30D6d984528f588486E5` and
@@ -51,15 +55,19 @@ The case-specific changes were:
 - E9: `is-number@99.99.99`, registry URL `https://registry.npmjs.org/is-number/99.99.99`, release URL tag `99.99.99`, expected commit all-zero.
 - E10: exact E1 tuple under a new case ID.
 - E11: baseline tuple with `registry_url=not-a-url`; commit/subdirectory invalid variants remain covered by automated tests.
+- E12: `is-arrayish@0.3.2`, registry URL `https://registry.npmjs.org/is-arrayish/0.3.2`, repository `qix-/node-is-arrayish`, release URL tag `0.3.2`, expected commit `8ef97ff99d606e911aeaf003b86318b882b4fba1`.
+- E13: `isobject@3.0.1`, registry URL `https://registry.npmjs.org/isobject/3.0.1`, repository `jonschlinkert/isobject`, release URL tag `3.0.1`, expected commit `7ad1fc405d19f144a21e2bfe947fa82801baa7aa`.
 
 ## Consolidated live proof matrix
 
-Every listed write was sent through the Codex in-app Studio browser. Unless
-noted otherwise, the owner account signed the transaction. Every transaction
-listed below reached `FINALIZED` and `MAJORITY_AGREE`; the leader result and
-authoritative readback are recorded explicitly.
+E1–E11 were sent through the Codex in-app Studio browser. E12 was sent through
+the prior production Vercel release and E13 through the exact final production
+Vercel release in Chrome profile 2. Unless noted otherwise, the owner account
+signed the transaction. Every transaction listed below reached `FINALIZED` and
+`MAJORITY_AGREE`; the leader result and authoritative readback are recorded
+explicitly.
 
-| ID | Purpose and Studio action | Transaction hash(es) | Leader result | Authoritative result/readback | Verdict |
+| ID | Purpose and action | Transaction hash(es) | Leader result | Authoritative result/readback | Verdict |
 |---|---|---|---|---|---|
 | E1 | Owner `create_case` with the baseline tuple | `0xca1669c5a669fee1f872731cd5539cea4a3564a3f1219a0814f977877545fb79` | `SUCCESS` | `get_count=1`; exact case stored as `DRAFT` with owner and all fixture fields | PASS |
 | E2 | Unauthorized account `freeze_case(E1)` | `0xd94042885fe2458e6f635c757f3d63538bf0aa35b91c041cd38b67caf8f736db` | `ERROR` | E1 remains `DRAFT`; no mutation | PASS — expected rejection |
@@ -72,13 +80,15 @@ authoritative readback are recorded explicitly.
 | E9 | Unavailable version, unresolved state, bounded retry | create `0xdd663436da1ee3c92da64cd9d9afaeef48619fb785f8b6a1c157a13e2dc2c31e`; freeze `0x56ef65f7c7fb2a9fb7f6060f48e17deaef4119d76ff487030dd6ae90a76d3e49`; assess-1 `0x78d95d81eb21cf266a65471dbbec0bfb9c950cf1ebb59e12ca6ac9a418032c2a`; retry-1 `0x7d341ba9b4af5de903df42a01eed0fded38c5b4ad7d3a8eff638027572430af5`; assess-2 `0x3ced8c390154a2d4f3eb6d4b73bff7286b97ec971d82da5505d01ead658222df`; retry-2 `0xd54422949a91fc0dfe64b5d6f01f0972a92fb683a1d638bae18e3b7437531b6b`; assess-3 `0xbea1cccf98db1365a7651252f43b14f72af3a269041e479f133a3a10e0dbabdf`; retry-limit `0x36cd1cfca1392efff6b993197fce2d83e1b1e9b6db556460ceb3591ff6342982` | `SUCCESS` through assess-3; retry-limit `ERROR` | Final state `UNRESOLVED`, `retry_count=2`; retry-limit leaves state unchanged | PASS |
 | E10 | Exact E1 tuple duplicate under a new case ID | `0xe96ecfb2d0407d693e89269dc5d16867aa4c67cd3fbb51354111e3035c2bca76` | `ERROR`; live result `ERR_DUPLICATE_PROVENANCE` | `get_count` remains `6`; new E10 case is rejected | PASS — expected rejection |
 | E11 | Invalid URL control (`registry_url=not-a-url`) | `0xab3162375c56153d749431542dd088c134bc705f46415240459d04233979b198` | `ERROR`; live result `ERR_INVALID_REGISTRY_URL` | `get_count` remains `6`; new case rejected; E1 remains `RESOLVED` | PASS — expected rejection |
+| E12 | Exact Vercel journey: reload disconnected, explicit OKX selection, owner `create_case`, retained receipt, copy action, Explorer link, finality and post-write readback | `0x72b0f0758e3c803f32ffbe7a48d33865f7efa7e25621ac1831ca98b850374ea9` | `SUCCESS` | `FINALIZED`; `MAJORITY_AGREE`; leader `execution_result=SUCCESS`; `get_count=9`; UI `Created and verified`; exact case `vercel-e2e-repair2-20260905` stored as `DRAFT` with the full E12 tuple | PASS |
+| E13 | Exact final Vercel journey: public Docs/How it works, reload disconnected, explicit OKX selection, owner `create_case`, phase indicator, retained receipt, copy action, Explorer link, finality and post-write readback | `0x3948fef3afbd6830bfcecf6a8e48898e5c13058d208d83da9e3c5de3e9145743` | `SUCCESS` | `FINALIZED`; `MAJORITY_AGREE`; leader `execution_result=SUCCESS`; `get_count=10`; UI `Created and verified`; exact case `vercel-e2e-final-f531d13-20260905` stored as `DRAFT` with the full E13 tuple | PASS |
 
 ## Test and release boundary
 
 - Local contract tests: `15 passed`.
-- Frontend tests: `22 passed` across 4 files.
+- Frontend tests: `28 passed` across 4 files.
 - Frontend production build: passed; only the documented non-blocking Vite chunk-size warning remains.
 - `genvm-lint` and `ruff`: passed.
-- All E1–E11 live writes above were executed against the exact deployed source hash and corroborated by RPC status plus latest-final contract readback.
-- No source, contract, backend, test, configuration, dependency, governance, or deployment file was changed by the live test run.
-- GitHub target, GitHub push, Vercel target, Vercel deployment, user Vercel E2E, Explorer pre-submission, and final release approval remain pending.
+- E13 was executed against the exact final deployed application revision and corroborated by direct receipt status plus latest-final application readback.
+- Final Vercel E2E also verified the public Docs/How it works journey, reload-to-disconnected behavior, explicit OKX reconnection, `WAITING_FOR_WALLET`/`WAITING_FOR_FINALITY`/`SUCCESS` phase semantics, retained hash/copy behavior, Explorer-link integrity, and public transaction-progress copy.
+- GitHub target and push are complete; Explorer pre-submission and final release approval remain pending their governed final review gates.
