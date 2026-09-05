@@ -25,6 +25,15 @@ function formatAccount(address: string | null): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
+export function publicTransactionStatus(status: string): string {
+  const normalized = status.toUpperCase();
+  if (normalized === "FINALIZED") return "Finalized. Verifying result…";
+  if (["ACCEPTED", "PROPOSING", "COMMITTING", "REVEALING", "READY_TO_FINALIZE"].includes(normalized)) {
+    return "Transaction submitted. Waiting for finality…";
+  }
+  return status;
+}
+
 export function userFacingError(cause: unknown, fallback: string): string {
   const raw = cause instanceof Error ? cause.message : "";
   const code = cause && typeof cause === "object" && "code" in cause ? Number((cause as { code?: unknown }).code) : undefined;
@@ -50,6 +59,7 @@ export default function App() {
   const [connectionError, setConnectionError] = useState("");
   const [connectingUuid, setConnectingUuid] = useState<string | null>(null);
   const [hash, setHash] = useState<`0x${string}` | null>(null);
+  const [copied, setCopied] = useState(false);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [writeInFlight, setWriteInFlight] = useState(false);
   const writeInFlightRef = useRef(false);
@@ -132,6 +142,17 @@ export default function App() {
     setConnectionError("");
   }
 
+  async function copyHash() {
+    if (!hash) return;
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setError("The transaction hash could not be copied. Select it manually from the receipt.");
+    }
+  }
+
   function handlePickerKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -181,7 +202,7 @@ export default function App() {
     if (writeInFlightRef.current) return;
     writeInFlightRef.current = true;
     setWriteInFlight(true);
-    setError(""); setHash(null); setStatus("Submitting once…");
+    setError(""); setHash(null); setCopied(false); setStatus("Waiting for wallet confirmation…");
     try {
       const tx = await sendWrite(selected.provider, account, "create_case", [
         form.caseId, "npm", form.packageName, form.version,
@@ -190,7 +211,7 @@ export default function App() {
         `https://github.com/${form.repositoryOwner.toLowerCase()}/${form.repositoryName.toLowerCase()}/releases/tag/${form.version}`,
         form.expectedCommit.toLowerCase(), form.sourceSubdirectory,
       ]);
-      setHash(tx); await waitForSuccess(tx, setStatus);
+      setHash(tx); setStatus("Transaction submitted. Waiting for finality…"); await waitForSuccess(tx, (next) => setStatus(publicTransactionStatus(next)));
       const refreshed = await getCase(form.caseId, { finalized: true }); setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setStatus("Created and verified");
     } catch (cause) { setStatus("Needs attention"); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
     finally { writeInFlightRef.current = false; setWriteInFlight(false); }
@@ -206,8 +227,8 @@ export default function App() {
     if (writeInFlightRef.current) return;
     writeInFlightRef.current = true;
     setWriteInFlight(true);
-    setError(""); setStatus("Submitting once…");
-    try { const tx = await sendWrite(selected.provider, account, method, [caseId]); setHash(tx); await waitForSuccess(tx, setStatus); setResult(await getCase(caseId, { finalized: true })); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]); } catch (cause) { setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+    setError(""); setCopied(false); setStatus("Waiting for wallet confirmation…");
+    try { const tx = await sendWrite(selected.provider, account, method, [caseId]); setHash(tx); setStatus("Transaction submitted. Waiting for finality…"); await waitForSuccess(tx, (next) => setStatus(publicTransactionStatus(next))); setResult(await getCase(caseId, { finalized: true })); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]); } catch (cause) { setStatus("Needs attention"); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
     finally { writeInFlightRef.current = false; setWriteInFlight(false); }
   }
 
@@ -281,7 +302,10 @@ export default function App() {
             <h3>Register provenance target</h3>
             <p className="panel-subtitle">Create a verifiable draft case binding an npm release to its source repository and commit.</p>
           </div>
-          <span className="status-dot">{status}</span>
+          <span className={`status-dot ${writeInFlight ? "status-pending" : ""}`} aria-live="polite">
+            {writeInFlight && <span className="status-spinner" aria-hidden="true"></span>}
+            <span>{status}</span>
+          </span>
         </div>
         <form onSubmit={submit} className="form-grid">
           <div className="form-section-title">Package Details</div>
@@ -413,10 +437,13 @@ export default function App() {
           <span className="receipt-dot"></span>
           <span>Transaction</span>
         </div>
-        <a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer" className="receipt-link">
-          <span className="receipt-hash">{hash}</span>
-          <span className="receipt-arrow" aria-hidden="true">↗</span>
-        </a>
+        <div className="receipt-actions">
+          <button type="button" className="copy-hash" onClick={copyHash} aria-live="polite">{copied ? "Copied" : "Copy hash"}</button>
+          <a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer" className="receipt-link">
+            <span className="receipt-hash">{hash}</span>
+            <span className="receipt-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
       </div>
     )}
   </main>

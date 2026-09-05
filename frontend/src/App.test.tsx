@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App, { canonicalRegistryUrl, userFacingError } from "./App";
+import App, { canonicalRegistryUrl, publicTransactionStatus, userFacingError } from "./App";
 import * as rpc from "./rpc";
 import { resetProviderDiscoveryForTests } from "./providers";
 import type { Eip1193Provider } from "./types";
@@ -61,6 +61,11 @@ describe("public wallet picker", () => {
 
   it("keeps duplicate provenance errors in the contract fault domain", () => {
     expect(userFacingError(new Error("Transaction ended as FINALIZED: ERR_DUPLICATE_PROVENANCE."), "fallback")).toContain("already registered");
+  });
+
+  it("maps pending lifecycle states to clear public progress copy", () => {
+    expect(publicTransactionStatus("PROPOSING")).toContain("Waiting for finality");
+    expect(publicTransactionStatus("FINALIZED")).toContain("Verifying result");
   });
 
   it("opens without requesting accounts and lists each available wallet", async () => {
@@ -261,9 +266,50 @@ describe("public wallet picker", () => {
     });
     expect(rpc.sendWrite).toHaveBeenCalledTimes(1);
     expect(container.querySelector<HTMLButtonElement>(".primary")?.disabled).toBe(true);
+    expect(container.querySelector(".status-spinner")).not.toBeNull();
     await act(async () => {
       release(`0x${"a".repeat(64)}`);
       await Promise.resolve();
     });
+  });
+
+  it("shows a copy action for a retained transaction hash", async () => {
+    const metamask = wallet();
+    const hash = `0x${"b".repeat(64)}` as `0x${string}`;
+    const writeText = vi.fn(async () => undefined);
+    const priorClipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    vi.mocked(rpc.sendWrite).mockResolvedValueOnce(hash);
+    vi.mocked(rpc.waitForSuccess).mockResolvedValueOnce();
+    const { container, root } = await renderApp();
+    roots.push(root);
+    try {
+      await act(async () => {
+        announce("m1", "MetaMask", metamask);
+        await Promise.resolve();
+        container.querySelector<HTMLButtonElement>(".wallet")?.click();
+        await flushFrame();
+        container.querySelector<HTMLButtonElement>("[data-wallet-option]")?.click();
+        await Promise.resolve();
+      });
+      const form = container.querySelector<HTMLFormElement>(".form-grid")!;
+      const values = ["case-copy", "is-number", "7.0.0", "jonschlinkert", "is-number", "a".repeat(40)];
+      form.querySelectorAll<HTMLInputElement>("input[required]").forEach((input, index) => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, values[index]);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      await act(async () => {
+        container.querySelector<HTMLButtonElement>(".primary")?.click();
+        await Promise.resolve();
+      });
+      const copy = container.querySelector<HTMLButtonElement>(".copy-hash")!;
+      expect(copy).not.toBeNull();
+      await act(async () => { copy.click(); await Promise.resolve(); });
+      expect(writeText).toHaveBeenCalledWith(hash);
+      expect(copy.textContent).toBe("Copied");
+    } finally {
+      if (priorClipboard) Object.defineProperty(navigator, "clipboard", priorClipboard);
+      else Reflect.deleteProperty(navigator, "clipboard");
+    }
   });
 });
