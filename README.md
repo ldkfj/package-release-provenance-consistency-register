@@ -7,8 +7,8 @@ A non-economic GenLayer application that checks whether an npm release points to
 - [Open the live application](https://package-release-provenance-consiste.vercel.app/)
 - [Source repository](https://github.com/ldkfj/package-release-provenance-consistency-register)
 - [Studionet contract in Explorer](https://explorer-studio.genlayer.com/address/0x9BF50C40e34BA42E28120aAAa84148fD25040F73)
-- [Production deployment](https://vercel.com/gam9/package-release-provenance-consistency-register/6jGnKpGpBBBz4XE9rDbgjUVxgoAM)
-- [Exact application revision](https://github.com/ldkfj/package-release-provenance-consistency-register/commit/f531d13c6d22525bd6beefcece53fe16e537c42b)
+- [Production deployment](https://vercel.com/gam9/package-release-provenance-consistency-register/GMfrmVk2eRkXZ2NzsT2qRVKmsPct)
+- [Exact application revision](https://github.com/ldkfj/package-release-provenance-consistency-register/commit/6a37d93707db6e78346f0d551ebc852a702f6822)
 
 ## The trust problem
 
@@ -77,9 +77,9 @@ The frontend configuration uses `VITE_CONTRACT_ADDRESS` and `VITE_STUDIONET_EXPL
 
 ## Tests and verification
 
-The current source has 15 contract tests, 28 frontend tests across four test files, a successful TypeScript/Vite production build, and passing `genvm-lint` and `ruff` checks. The consolidated live evidence ledger records the exact application revision, contract source hash, deployment transaction, source/deployment parity, and E1–E13 proof matrix in [docs/VERIFICATION.md](docs/VERIFICATION.md).
+The current source has 15 contract tests, 31 frontend tests across four test files, a successful TypeScript/Vite production build, and passing `genvm-lint` and `ruff` checks. The consolidated live evidence ledger records the exact application revision, contract source hash, deployment transaction, source/deployment parity, and E1–E14 proof matrix in [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
-The final Vercel journey verified reload-to-disconnected behavior, explicit OKX selection, the public Docs/How it works content, transaction phases, retained receipt hash and Explorer link, finality, execution success, and exact post-write readback for `isobject@3.0.1`.
+The final Vercel journey verified reload-to-disconnected behavior, explicit OKX selection, the public Docs/How it works content, transaction phases, retained receipt hash and Explorer link, finality, execution success, and exact post-write readback for `is-extendable@1.0.1`. The finalized count displayed `10` after a clean reload and `11` after the confirmed write.
 
 ## Deployment and source parity
 
@@ -87,9 +87,9 @@ The final Vercel journey verified reload-to-disconnected behavior, explicit OKX 
 - Contract: `0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
 - Deployment transaction: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
 - Contract source SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
-- Application source revision: `f531d13c6d22525bd6beefcece53fe16e537c42b`.
-- Application source tree: `3c093f053f75709e19aca312799c58e8df63470f`.
-- Vercel deployment: `6jGnKpGpBBBz4XE9rDbgjUVxgoAM`.
+- Application source revision: `6a37d93707db6e78346f0d551ebc852a702f6822`.
+- Application source tree: `f60aaff13492bda7ae38dac2a24aefcb6d84fe23`.
+- Vercel deployment: `GMfrmVk2eRkXZ2NzsT2qRVKmsPct`.
 
 The deployed contract is intentionally frozen. There is no upgrade path, so a contract correction means deploying a new contract and updating the application configuration and public evidence together. The current application and contract are bound to the links above.
 

@@ -9,11 +9,11 @@ claim Explorer submission or final release approval.
 
 ## Exact source and deployment
 
-- Application source revision: `f531d13c6d22525bd6beefcece53fe16e537c42b`.
-- Application source tree: `3c093f053f75709e19aca312799c58e8df63470f`.
+- Application source revision: `6a37d93707db6e78346f0d551ebc852a702f6822`.
+- Application source tree: `f60aaff13492bda7ae38dac2a24aefcb6d84fe23`.
 - Contract source: `contracts/package_release_provenance_consistency_register.py`.
 - Contract SHA-256: `5C5DA9E3E45F99B81E5AAF0647D5804761D157452B2036EA1DDF16F11783D34A`.
-- Previous application revision: `2bc3e8a7b34b157f8075f936c06b0e6ad9dcac69`.
+- Previous application revision: `f531d13c6d22525bd6beefcece53fe16e537c42b`.
 - Network: Studionet (`61999`).
 - Contract classification: `INTENTIONALLY FROZEN`; there is no upgrade path.
 - Deployer/owner: `0x34b92E6553eaCA11A00A9d86d75d8a7881779D78`.
@@ -22,7 +22,7 @@ claim Explorer submission or final release approval.
 - Deployment transaction: `0xc04350aa86ac9dad970f200e4df172268f63305044a823be3c7b8434a07ab6f2`.
 - Deployment status: `FINALIZED`; consensus: `MAJORITY_AGREE`; leader execution: `SUCCESS`.
 - Explorer: `https://explorer-studio.genlayer.com/address/0x9BF50C40e34BA42E28120aAAa84148fD25040F73`.
-- Vercel production deployment: `https://vercel.com/gam9/package-release-provenance-consistency-register/6jGnKpGpBBBz4XE9rDbgjUVxgoAM`.
+- Vercel production deployment: `https://vercel.com/gam9/package-release-provenance-consistency-register/GMfrmVk2eRkXZ2NzsT2qRVKmsPct`.
 - Live application: `https://package-release-provenance-consiste.vercel.app/`.
 - Vercel build: remote `tsc -b && vite build` completed successfully for the deployed revision.
 
@@ -57,6 +57,7 @@ The case-specific changes were:
 - E11: baseline tuple with `registry_url=not-a-url`; commit/subdirectory invalid variants remain covered by automated tests.
 - E12: `is-arrayish@0.3.2`, registry URL `https://registry.npmjs.org/is-arrayish/0.3.2`, repository `qix-/node-is-arrayish`, release URL tag `0.3.2`, expected commit `8ef97ff99d606e911aeaf003b86318b882b4fba1`.
 - E13: `isobject@3.0.1`, registry URL `https://registry.npmjs.org/isobject/3.0.1`, repository `jonschlinkert/isobject`, release URL tag `3.0.1`, expected commit `7ad1fc405d19f144a21e2bfe947fa82801baa7aa`.
+- E14: `is-extendable@1.0.1`, registry URL `https://registry.npmjs.org/is-extendable/1.0.1`, repository `jonschlinkert/is-extendable`, release URL tag `1.0.1`, expected commit `230717f6be5be812c16916ec8a745d6252dfa7a5`.
 
 ## Consolidated live proof matrix
 
@@ -82,13 +83,14 @@ explicitly.
 | E11 | Invalid URL control (`registry_url=not-a-url`) | `0xab3162375c56153d749431542dd088c134bc705f46415240459d04233979b198` | `ERROR`; live result `ERR_INVALID_REGISTRY_URL` | `get_count` remains `6`; new case rejected; E1 remains `RESOLVED` | PASS — expected rejection |
 | E12 | Exact Vercel journey: reload disconnected, explicit OKX selection, owner `create_case`, retained receipt, copy action, Explorer link, finality and post-write readback | `0x72b0f0758e3c803f32ffbe7a48d33865f7efa7e25621ac1831ca98b850374ea9` | `SUCCESS` | `FINALIZED`; `MAJORITY_AGREE`; leader `execution_result=SUCCESS`; `get_count=9`; UI `Created and verified`; exact case `vercel-e2e-repair2-20260905` stored as `DRAFT` with the full E12 tuple | PASS |
 | E13 | Exact final Vercel journey: public Docs/How it works, reload disconnected, explicit OKX selection, owner `create_case`, phase indicator, retained receipt, copy action, Explorer link, finality and post-write readback | `0x3948fef3afbd6830bfcecf6a8e48898e5c13058d208d83da9e3c5de3e9145743` | `SUCCESS` | `FINALIZED`; `MAJORITY_AGREE`; leader `execution_result=SUCCESS`; `get_count=10`; UI `Created and verified`; exact case `vercel-e2e-final-f531d13-20260905` stored as `DRAFT` with the full E13 tuple | PASS |
+| E14 | Repair release journey: clean reload count loading/finalized state, explicit OKX selection, owner `create_case`, phase indicator, retained receipt/copy/Explorer link, finality, readback, reload/disconnect and reconnect | `0x38626e771e096d895054c2e6336a14f8589618e7f2afff32ef9d8a26fa782fbd` | `SUCCESS` | `FINALIZED`; `MAJORITY_AGREE`; leader `execution_result=SUCCESS`; `get_count=10` before the write and `11` after finalized readback; UI `Created and verified`; exact case `vercel-e2e-repair-f001-20260905` stored as `DRAFT` with package `is-extendable@1.0.1`, repository `jonschlinkert/is-extendable`, and expected commit `230717f6be5be812c16916ec8a745d6252dfa7a5` | PASS |
 
 ## Test and release boundary
 
 - Local contract tests: `15 passed`.
-- Frontend tests: `28 passed` across 4 files.
+- Frontend tests: `31 passed` across 4 files.
 - Frontend production build: passed; only the documented non-blocking Vite chunk-size warning remains.
 - `genvm-lint` and `ruff`: passed.
-- E13 was executed against the exact final deployed application revision and corroborated by direct receipt status plus latest-final application readback.
-- Final Vercel E2E also verified the public Docs/How it works journey, reload-to-disconnected behavior, explicit OKX reconnection, `WAITING_FOR_WALLET`/`WAITING_FOR_FINALITY`/`SUCCESS` phase semantics, retained hash/copy behavior, Explorer-link integrity, and public transaction-progress copy.
+- E14 was executed against the exact final deployed application revision and corroborated by direct receipt status plus latest-final application readback.
+- Final Vercel E2E also verified the public Docs/How it works journey, finalized count loading/unavailable behavior, reload-to-disconnected behavior, explicit OKX reconnection, `WAITING_FOR_WALLET`/`WAITING_FOR_FINALITY`/`SUCCESS` phase semantics, retained hash/copy behavior, Explorer-link integrity, and public transaction-progress copy.
 - GitHub target and push are complete; Explorer pre-submission and final release approval remain pending their governed final review gates.
