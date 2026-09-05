@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App, { canonicalRegistryUrl, publicTransactionStatus, userFacingError } from "./App";
+import App, { canonicalRegistryUrl, INITIAL_WRITE_PROGRESS, publicTransactionStatus, transactionPhaseFromStatus, userFacingError, type WritePhase } from "./App";
 import * as rpc from "./rpc";
 import { resetProviderDiscoveryForTests } from "./providers";
 import type { Eip1193Provider } from "./types";
@@ -10,6 +10,7 @@ const ACCOUNT = `0x${"1".repeat(40)}`;
 const OTHER_ACCOUNT = `0x${"2".repeat(40)}`;
 
 vi.mock("./rpc", () => ({
+  CONTRACT_ADDRESS: "0x9BF50C40e34BA42E28120aAAa84148fD25040F73",
   EXPLORER_URL: "https://explorer.example",
   STUDIONET_CHAIN: {},
   STUDIONET_CHAIN_ID: "0xf22f",
@@ -66,6 +67,19 @@ describe("public wallet picker", () => {
   it("maps pending lifecycle states to clear public progress copy", () => {
     expect(publicTransactionStatus("PROPOSING")).toContain("Waiting for finality");
     expect(publicTransactionStatus("FINALIZED")).toContain("Verifying result");
+  });
+
+  it("exposes every transaction phase and public Docs / How it works content", async () => {
+    const phases: WritePhase[] = ["IDLE", "WAITING_FOR_WALLET", "SUBMITTED", "WAITING_FOR_FINALITY", "VERIFYING_EXECUTION", "VERIFYING_READBACK", "SUCCESS", "REJECTED", "FAILED", "RECONCILIATION_REQUIRED"];
+    expect(INITIAL_WRITE_PROGRESS.phase).toBe("IDLE");
+    expect(phases).toHaveLength(10);
+    expect(transactionPhaseFromStatus("PROPOSING")).toBe("WAITING_FOR_FINALITY");
+    expect(transactionPhaseFromStatus("FINALIZED")).toBe("VERIFYING_EXECUTION");
+    const { container, root } = await renderApp();
+    roots.push(root);
+    expect(container.textContent).toContain("How it works");
+    expect(container.textContent).toContain("authoritative state");
+    expect(container.querySelector("[data-transaction-phase]")?.getAttribute("data-transaction-phase")).toBe("IDLE");
   });
 
   it("opens without requesting accounts and lists each available wallet", async () => {

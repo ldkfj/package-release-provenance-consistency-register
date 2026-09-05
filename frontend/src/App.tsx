@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { discoverProviders, listenForProviders } from "./providers";
-import { EXPLORER_URL, getCase, getCount, sendWrite, STUDIONET_CHAIN, STUDIONET_CHAIN_ID, waitForSuccess } from "./rpc";
+import { CONTRACT_ADDRESS, EXPLORER_URL, getCase, getCount, sendWrite, STUDIONET_CHAIN, STUDIONET_CHAIN_ID, waitForSuccess } from "./rpc";
 import type { ContractCase, ProviderInfo } from "./types";
 import "./styles.css";
 
@@ -34,6 +34,47 @@ export function publicTransactionStatus(status: string): string {
   return status;
 }
 
+export type WritePhase =
+  | "IDLE"
+  | "WAITING_FOR_WALLET"
+  | "SUBMITTED"
+  | "WAITING_FOR_FINALITY"
+  | "VERIFYING_EXECUTION"
+  | "VERIFYING_READBACK"
+  | "SUCCESS"
+  | "REJECTED"
+  | "FAILED"
+  | "RECONCILIATION_REQUIRED";
+
+export const INITIAL_WRITE_PROGRESS: { phase: WritePhase } = { phase: "IDLE" };
+export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+export function transactionPhaseFromStatus(status: string): WritePhase {
+  const normalized = status.toUpperCase();
+  if (normalized === "FINALIZED") return "VERIFYING_EXECUTION";
+  if (["ACCEPTED", "PROPOSING", "COMMITTING", "REVEALING", "READY_TO_FINALIZE"].includes(normalized)) return "WAITING_FOR_FINALITY";
+  if (["SUBMITTED", "PENDING"].includes(normalized)) return "SUBMITTED";
+  return "RECONCILIATION_REQUIRED";
+}
+
+function isUserRejection(cause: unknown): boolean {
+  const value = cause as { code?: unknown; cause?: { code?: unknown } } | null;
+  return value?.code === 4001 || value?.cause?.code === 4001 || /reject|denied|cancel/i.test(cause instanceof Error ? cause.message : "");
+}
+
+function failurePhase(cause: unknown, hashReceived: boolean): WritePhase {
+  if (isUserRejection(cause)) return "REJECTED";
+  const raw = cause instanceof Error ? cause.message : "";
+  if (hashReceived && /timeout|could not be confirmed|readback|busy|rate|unavailable|reconciliation/i.test(raw)) return "RECONCILIATION_REQUIRED";
+  return "FAILED";
+}
+
+function failureStatus(phase: WritePhase): string {
+  if (phase === "REJECTED") return "Wallet request canceled";
+  if (phase === "RECONCILIATION_REQUIRED") return "Verification needs attention";
+  return "Transaction failed";
+}
+
 export function userFacingError(cause: unknown, fallback: string): string {
   const raw = cause instanceof Error ? cause.message : "";
   const code = cause && typeof cause === "object" && "code" in cause ? Number((cause as { code?: unknown }).code) : undefined;
@@ -55,6 +96,7 @@ export default function App() {
   const [result, setResult] = useState<ContractCase | null>(null);
   const [count, setCount] = useState<number | null>(null);
   const [status, setStatus] = useState("Ready");
+  const [transactionPhase, setTransactionPhase] = useState<WritePhase>(INITIAL_WRITE_PROGRESS.phase);
   const [error, setError] = useState("");
   const [connectionError, setConnectionError] = useState("");
   const [connectingUuid, setConnectingUuid] = useState<string | null>(null);
@@ -78,6 +120,7 @@ export default function App() {
       setAccount(null);
       setResult(null);
       setHash(null);
+      setTransactionPhase("IDLE");
       setStatus(message);
     };
     const accountsChanged = (...args: unknown[]) => {
@@ -202,7 +245,8 @@ export default function App() {
     if (writeInFlightRef.current) return;
     writeInFlightRef.current = true;
     setWriteInFlight(true);
-    setError(""); setHash(null); setCopied(false); setStatus("Waiting for wallet confirmation…");
+    setError(""); setHash(null); setCopied(false); setTransactionPhase("WAITING_FOR_WALLET"); setStatus("Waiting for wallet confirmation…");
+    let submittedHash: `0x${string}` | null = null;
     try {
       const tx = await sendWrite(selected.provider, account, "create_case", [
         form.caseId, "npm", form.packageName, form.version,
@@ -211,9 +255,17 @@ export default function App() {
         `https://github.com/${form.repositoryOwner.toLowerCase()}/${form.repositoryName.toLowerCase()}/releases/tag/${form.version}`,
         form.expectedCommit.toLowerCase(), form.sourceSubdirectory,
       ]);
-      setHash(tx); setStatus("Transaction submitted. Waiting for finality…"); await waitForSuccess(tx, (next) => setStatus(publicTransactionStatus(next)));
-      const refreshed = await getCase(form.caseId, { finalized: true }); setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setStatus("Created and verified");
-    } catch (cause) { setStatus("Needs attention"); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+      submittedHash = tx;
+      setHash(tx); setTransactionPhase("SUBMITTED"); setStatus("Transaction submitted. Waiting for finality…");
+      setTransactionPhase("WAITING_FOR_FINALITY");
+      await waitForSuccess(tx, (next) => { setTransactionPhase(transactionPhaseFromStatus(next)); setStatus(publicTransactionStatus(next)); });
+      setTransactionPhase("VERIFYING_READBACK");
+      const refreshed = await getCase(form.caseId, { finalized: true });
+      setResult(refreshed); setCaseId(form.caseId); setCount((value) => value === null ? value : value + 1); setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus("Created and verified");
+    } catch (cause) {
+      const phase = failurePhase(cause, Boolean(submittedHash));
+      setTransactionPhase(phase); setStatus(failureStatus(phase)); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again."));
+    }
     finally { writeInFlightRef.current = false; setWriteInFlight(false); }
   }
 
@@ -222,13 +274,45 @@ export default function App() {
     try { setResult(await getCase(caseId)); } catch (cause) { setError(userFacingError(cause, "We could not load that case. Check the case ID and try again.")); }
   }
 
+  async function reconcileTransaction() {
+    const activeHash = hash;
+    const activeCaseId = caseId || form.caseId;
+    if (!activeHash || !activeCaseId || writeInFlightRef.current) return;
+    writeInFlightRef.current = true;
+    setWriteInFlight(true);
+    setError(""); setTransactionPhase("WAITING_FOR_FINALITY"); setStatus("Checking transaction status…");
+    try {
+      await waitForSuccess(activeHash, (next) => { setTransactionPhase(transactionPhaseFromStatus(next)); setStatus(publicTransactionStatus(next)); });
+      setTransactionPhase("VERIFYING_READBACK");
+      setResult(await getCase(activeCaseId, { finalized: true }));
+      setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus("Verification complete");
+    } catch (cause) {
+      const phase = failurePhase(cause, true);
+      setTransactionPhase(phase); setStatus(failureStatus(phase)); setError(userFacingError(cause, "The transaction could not be verified yet. Keep the hash and try again."));
+    }
+    finally { writeInFlightRef.current = false; setWriteInFlight(false); }
+  }
+
   async function runWrite(method: "freeze_case" | "assess_case" | "retry_unresolved") {
     if (!selected || !account || !caseId) { setError("Connect a wallet and load a case first."); return; }
     if (writeInFlightRef.current) return;
     writeInFlightRef.current = true;
     setWriteInFlight(true);
-    setError(""); setCopied(false); setStatus("Waiting for wallet confirmation…");
-    try { const tx = await sendWrite(selected.provider, account, method, [caseId]); setHash(tx); setStatus("Transaction submitted. Waiting for finality…"); await waitForSuccess(tx, (next) => setStatus(publicTransactionStatus(next))); setResult(await getCase(caseId, { finalized: true })); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]); } catch (cause) { setStatus("Needs attention"); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again.")); }
+    setError(""); setCopied(false); setTransactionPhase("WAITING_FOR_WALLET"); setStatus("Waiting for wallet confirmation…");
+    let submittedHash: `0x${string}` | null = null;
+    try {
+      const tx = await sendWrite(selected.provider, account, method, [caseId]);
+      submittedHash = tx;
+      setHash(tx); setTransactionPhase("SUBMITTED"); setStatus("Transaction submitted. Waiting for finality…");
+      setTransactionPhase("WAITING_FOR_FINALITY");
+      await waitForSuccess(tx, (next) => { setTransactionPhase(transactionPhaseFromStatus(next)); setStatus(publicTransactionStatus(next)); });
+      setTransactionPhase("VERIFYING_READBACK");
+      setResult(await getCase(caseId, { finalized: true }));
+      setWriteInFlight(false); setTransactionPhase("SUCCESS"); setStatus({ freeze_case: "Provenance locked", assess_case: "Assessment complete", retry_unresolved: "Retry complete" }[method]);
+    } catch (cause) {
+      const phase = failurePhase(cause, Boolean(submittedHash));
+      setTransactionPhase(phase); setStatus(failureStatus(phase)); setError(userFacingError(cause, "That action could not be completed. Check your wallet and try again."));
+    }
     finally { writeInFlightRef.current = false; setWriteInFlight(false); }
   }
 
@@ -294,6 +378,37 @@ export default function App() {
       </div>
     </section>
 
+    <section className="docs-section" aria-labelledby="how-it-works-title">
+      <div className="docs-intro">
+        <span className="eyebrow">Docs / How it works</span>
+        <h2 id="how-it-works-title">A clear path from release claim to public record.</h2>
+        <p>
+          The register compares one npm package release with the GitHub source release it claims. GenLayer validators review the public evidence and the resulting state is kept on Studionet.
+        </p>
+      </div>
+      <div className="docs-grid">
+        <article className="docs-card">
+          <span className="docs-card-label">Start here</span>
+          <h3>Connect a wallet</h3>
+          <p>Choose a wallet from the picker and confirm the connection. The page starts disconnected after every reload.</p>
+        </article>
+        <article className="docs-card">
+          <span className="docs-card-label">Prepare the claim</span>
+          <h3>Register a draft</h3>
+          <p>Enter the package name and version, GitHub owner and repository, release commit, and optional source subdirectory.</p>
+        </article>
+        <article className="docs-card">
+          <span className="docs-card-label">Verify the result</span>
+          <h3>Freeze and assess</h3>
+          <p>Create the draft, wait for finality, then use the case panel to freeze inputs and ask validators to assess consistency.</p>
+        </article>
+      </div>
+      <div className="docs-footer">
+        <p><strong>What to expect:</strong> A pending transaction shows its progress and keeps a copyable hash. After finality, the case panel shows the authoritative state and observed source result. Canceled or failed actions remain recoverable without silently submitting again.</p>
+        <a className="docs-link" href={CONTRACT_ADDRESS ? `${EXPLORER_URL}/address/${CONTRACT_ADDRESS}` : EXPLORER_URL} target="_blank" rel="noreferrer">Verify the register on Studionet Explorer <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
     <section className="workspace">
       <div className="panel">
         <div className="panel-head">
@@ -302,7 +417,7 @@ export default function App() {
             <h3>Register provenance target</h3>
             <p className="panel-subtitle">Create a verifiable draft case binding an npm release to its source repository and commit.</p>
           </div>
-          <span className={`status-dot ${writeInFlight ? "status-pending" : ""}`} aria-live="polite">
+          <span className={`status-dot ${writeInFlight ? "status-pending" : ""}`} data-transaction-phase={transactionPhase} aria-live="polite" aria-atomic="true">
             {writeInFlight && <span className="status-spinner" aria-hidden="true"></span>}
             <span>{status}</span>
           </span>
@@ -438,6 +553,7 @@ export default function App() {
           <span>Transaction</span>
         </div>
         <div className="receipt-actions">
+          {transactionPhase === "RECONCILIATION_REQUIRED" && <button type="button" className="copy-hash" onClick={reconcileTransaction} disabled={writeInFlight}>Check again</button>}
           <button type="button" className="copy-hash" onClick={copyHash} aria-live="polite">{copied ? "Copied" : "Copy hash"}</button>
           <a href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer" className="receipt-link">
             <span className="receipt-hash">{hash}</span>
